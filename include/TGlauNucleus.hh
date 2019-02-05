@@ -22,9 +22,7 @@
 #include <TString.h>
 #include <TSystem.h>
 #include <TVector3.h>
-#ifdef HAVE_MATHMORE
- #include <Math/SpecFuncMathMore.h>
-#endif
+#include <Math/SpecFuncMathMore.h>
 using namespace std;
 #endif
 
