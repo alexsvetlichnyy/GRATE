@@ -78,8 +78,8 @@ TF1 *getNNProf(Double_t snn, Double_t omega, Double_t G)
 }
 
 //---------------------------------------------------------------------------------
-  ClassImp(TGlauberMC)
-  ClassImp(TGlauberMC::Event)
+  //ClassImp(TGlauberMC)
+  //ClassImp(TGlauberMC::Event)
 //---------------------------------------------------------------------------------
 
 TGlauberMC::TGlauberMC(const char* NA, const char* NB, Double_t xsect, Double_t xsectsigma) :

@@ -66,7 +66,7 @@
 
 #include "TGlauNucleon.hh"
 
-ClassImp(TGlauNucleon)
+//ClassImp(TGlauNucleon)
   //---------------------------------------------------------------------------------
 void TGlauNucleon::RotateXYZ(Double_t phi, Double_t theta)
 {

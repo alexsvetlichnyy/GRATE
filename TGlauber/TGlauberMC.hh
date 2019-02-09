@@ -43,6 +43,7 @@ class TGlauberMC : public TNamed
   public:
     class Event {
       public:
+
         Float_t Npart;       //Number of wounded (participating) nucleons in current event
         Float_t Ncoll;       //Number of binary collisions in current event
         Float_t Nhard;       //Number of hard collisions in current event (based on fHardFrac)
@@ -94,7 +95,7 @@ class TGlauberMC : public TNamed
                               AreaA=0;AreaO=0;X0=0;Y0=0;Phi0=0;Length=0;
                               MeanX=0;MeanY=0;MeanX2=0;MeanY2=0;MeanXY=0;MeanXSystem=0;MeanYSystem=0;MeanXA=0;MeanYA=0;MeanXB=0;MeanYB=0;
                               PhiA=0;ThetaA=0;PhiB=0;ThetaB=0;} // order must match that given in vars below
-        ClassDef(TGlauberMC::Event, 1)
+       // ClassDef(TGlauberMC::Event, 1)
     };
 
   protected:
@@ -197,7 +198,7 @@ class TGlauberMC : public TNamed
     static void         PrintVersion()               {cout << "TGlauberMC " << Version() << endl;}
     static const char  *Version()                    {return "v3.1a";}
 #if !defined (__CINT__) || defined (__MAKECINT__)
-      ClassDef(TGlauberMC,6)
+      //ClassDef(TGlauberMC,6)
 #endif
 };
 

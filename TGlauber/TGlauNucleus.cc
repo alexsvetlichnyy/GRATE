@@ -68,7 +68,7 @@
 
 
 //---------------------------------------------------------------------------------
-ClassImp(TGlauNucleus)
+//ClassImp(TGlauNucleus)
 //---------------------------------------------------------------------------------
 TGlauNucleus::TGlauNucleus(const char* iname, Int_t iN, Double_t iR, Double_t ia, Double_t iw, TF1* ifunc) : 
   TNamed(iname,""),

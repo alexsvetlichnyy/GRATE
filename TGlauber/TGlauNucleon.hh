@@ -70,7 +70,7 @@ class TGlauNucleon : public TObject
     void       SetXYZ(Double_t x, Double_t y, Double_t z) {fX=x; fY=y; fZ=z;}
     
     #if !defined (__CINT__) || defined (__MAKECINT__)
-      ClassDef(TGlauNucleon,4)
+      //ClassDef(TGlauNucleon,4)
     #endif
 
 };

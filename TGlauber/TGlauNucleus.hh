@@ -110,7 +110,7 @@ class TGlauNucleus : public TNamed
     void       SetW(Double_t iw);
     TVector3  &ThrowNucleons(Double_t xshift=0.);
 #if !defined (__CINT__) || defined (__MAKECINT__)
-      ClassDef(TGlauNucleus,6)
+      //ClassDef(TGlauNucleus,6)
 #endif   
 };
 
