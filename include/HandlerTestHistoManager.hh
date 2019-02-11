@@ -6,6 +6,7 @@
 
 #include "globals.hh"
 #include "G4SystemOfUnits.hh"
+#include "TTree.h"
 class TFile;
 class TH1D;
 class TH2D;
@@ -20,14 +21,12 @@ class HandlerTestHistoManager
   public:
 
   TH1D* GetHisto(G4int id) {return histo[id];};
+  TTree* GetTree() {return tree;};
   TH2D* GetHisto2(G4int id) {return histo2[id];};
-  TH2D* GetIsotopMap() {return IsotopMapHisto;};
        
   void BookHisto();
   void NormalizeHisto();
   void CleanHisto();
-  void OpenHisto();
-  void CloseMap();
   
   inline G4int GetSourceZ() {return sourceZ;}
   inline G4int GetSourceA() {return sourceA;}
@@ -47,7 +46,9 @@ class HandlerTestHistoManager
     TFile* IsotopMap;
     TH1D*  histo[20];
     TH2D*  histo2[10];
-    TH2D* IsotopMapHisto;
+    TTree* tree;
+ 
+        
     
     G4int sourceZ;
     G4int sourceA;

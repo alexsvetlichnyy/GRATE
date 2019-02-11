@@ -43,16 +43,14 @@ HandlerTestHistoManager::HandlerTestHistoManager()
   }
 
 
-  while ( (iterations<10) || (iterations>10000000) ) {
+  while ( (iterations<10) || (iterations>100000) ) {
     std::cout<<"Please enter number of iterations: ";
     std::cin >> iterations;
 
   } 
 
   std::cout << "Please enter the file name to write histograms (.root will be supplied): ";
-  std::cin >> fileName;
-  std::cout << "Please enter the file name to open with the path: ";
-  std::cin>> IsotopMapPath;  
+  std::cin >> fileName; 
  
 
 
@@ -67,26 +65,19 @@ HandlerTestHistoManager::~HandlerTestHistoManager()
   
 }
 
-void HandlerTestHistoManager::OpenHisto()
-{
- TFile *IsotopMap= new TFile(IsotopMapPath);
- IsotopMap->ls();
- IsotopMapHisto = (TH2D*)IsotopMap->Get("h2"); 
- std::cout<<"Histogram graped"<<std::endl;
-}
-
 void HandlerTestHistoManager::BookHisto()
 {
 
 // Open a file to keep histograms inside it ... 
 
- if ( fileName == "") fileName = "Dexcitation";
+ if ( fileName == "") fileName = "Spectators";
  fileType = "root";
  fileFullName = fileName+"."+fileType;
  compressionFactor = 8;
  fFile = new TFile(fileFullName, "RECREATE", fileName, compressionFactor);
  G4cout << "Histograms will be written to " << fileFullName << G4endl;
-
+//Creating a Tree
+ tree = new TTree("Glauber","Events from glauber modeling");
 // Book all histograms there ...
 
  histo[0] =  new TH1D("multip","Average multiplicity",binsExEn,lowLimitExEn/A,upperLimitExEn/A);
@@ -102,16 +93,14 @@ void HandlerTestHistoManager::BookHisto()
  histo2[1] = new TH2D("Ex En distribution"," ;E*/A;A_pf/A",1000, 0, 13, sourceA+1, 0, 1);
  
  histo2[2] = new TH2D("Mass and Charge distribution"," ;Z;A",sourceZ+1, -0.5, sourceZ+0.5, sourceA+1, -0.5, sourceA+0.5);
+ 
+ histo2[3] = new TH2D("side A vs. side B"," ;A;B",sourceA+1, -0.5, sourceA+0.5, sourceA+1, -0.5, sourceA+0.5);
+
 
 }
-
-void HandlerTestHistoManager::CloseMap(){
-  IsotopMap->Close();
-}
-
 
 void HandlerTestHistoManager::CleanHisto()
-{
+{ 
   fFile->Write();
   G4cout << "\n----> Histograms were written into the file " << fileFullName << G4endl;
   //  delete [] histo;
