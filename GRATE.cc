@@ -1,12 +1,11 @@
 
-// Igor Pshenichnov 06.08.2008 + Alexandr Svetlichnyi 28.01.2019
-// This main{} used to calculate de-excitation of hot nucleis
-// by G4ExcitationHandler
+// Igor Pshenichnov 06.08.2008 + Alexandr Svetlichnyi at present
 // ROOT 5 or higher and Geant4 10 or higher installation is reqired
 
 #include "G4RunManager.hh"
 #include "G4StateManager.hh"
 
+#include "G4NeutronInelasticCrossSection.hh"
 #include "G4ParticleTypes.hh"
 #include "G4ParticleTable.hh"
 #include "G4BosonConstructor.hh"
@@ -15,15 +14,17 @@
 #include "G4BaryonConstructor.hh"
 #include "G4IonConstructor.hh"
 #include "G4SystemOfUnits.hh"
-
+	
 #include "G4ReactionProductVector.hh"
 #include "G4ReactionProduct.hh"
 #include "G4ExcitationHandler.hh"
 #include "G4NucleiProperties.hh"
-#include "HandlerTestHistoManager.hh"
+#include "GRATEmanager.hh"
 #include "TGlauber/TGlauberMC.hh"
 #include "TGlauber/TGlauNucleon.hh"
 #include "TGlauber/TGlauNucleus.hh"
+#include "TRandom.h" 
+#include "TVector3.h"
 #include "Randomize.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4Threading.hh"
@@ -46,11 +47,16 @@ int main()
    //Seting parameters for Deexcitation
   G4NuclearLevelData* fLevelData = G4NuclearLevelData::GetInstance(); 
   G4DeexPrecoParameters* fParam = fLevelData->GetParameters();
-  fParam->SetMinExPerNucleounForMF(3*MeV);
+  fParam->SetMinExPerNucleounForMF(4*MeV);
 
   G4StateManager* fStateManager = G4StateManager::GetStateManager();
-
+   
+  G4Random::setTheEngine(new CLHEP::RanluxEngine());
   
+  CLHEP::HepRandom::setTheSeeds(CLHEP::HepRandom::getTheSeeds());
+
+  CLHEP::HepRandom::setTheEngine(new CLHEP::RanluxEngine);
+
   G4RunManager * runManager = new G4RunManager;
 
   G4BosonConstructor pCBos;
@@ -81,68 +87,120 @@ int main()
 
   G4double Ericson(G4double, G4double, G4int ,G4int);
 
-  // The user will be asked for the charge and mass of the hot nuclear system to
-  // simulate its decay. 
+  // The user will be asked for the nuclear name to simulate it's collisions. 
 
-  HandlerTestHistoManager histoManager;
+  GRATEmanager histoManager;
  
   //arrays for tree creation
-  std::vector<G4double> MassOnSideA;
-  std::vector<G4double> MassOnSideB;
-  G4int Npart_on_A;
-  G4int Npart_on_B;
-  G4double b;
+  std::vector<G4float> MassOnSideA;
+  std::vector<G4float> MassOnSideB;
+  std::vector<G4float> ChargeOnSideA;
+  std::vector<G4float> ChargeOnSideB;
+  std::vector<G4float> pXonSideA;
+  std::vector<G4float> pYonSideA;
+  std::vector<G4float> pZonSideA;
+  std::vector<G4float> pXonSideB;
+  std::vector<G4float> pYonSideB;
+  std::vector<G4float> pZonSideB;
+  G4float b;
+  G4float ExEn;
+  G4int id;
 
   // Histograms will be booked now.
   histoManager.BookHisto();
-  
+
   histoManager.GetTree()->Branch("A_on_A", "std::vector" ,&MassOnSideA);
   histoManager.GetTree()->Branch("A_on_B", "std::vector" ,&MassOnSideB);
-  histoManager.GetTree()->Branch("Npart_on_A", &Npart_on_A,"Npart_on_A/I");
-  histoManager.GetTree()->Branch("Npart_on_B", &Npart_on_B,"Npart_on_B/I");
-  histoManager.GetTree()->Branch("impact_parameter", &b, "impact_parameter/D");
-  
+  histoManager.GetTree()->Branch("Z_on_A", "std::vector" ,&ChargeOnSideA);
+  histoManager.GetTree()->Branch("Z_on_B", "std::vector" ,&ChargeOnSideB);
+  histoManager.GetTree()->Branch("pX_on_A", "std::vector" ,&pXonSideA,128000,1);
+  histoManager.GetTree()->Branch("pY_on_A", "std::vector" ,&pYonSideA,128000,1);
+  histoManager.GetTree()->Branch("pZ_on_A", "std::vector" ,&pZonSideA,128000,1);
+  histoManager.GetTree()->Branch("pX_on_B", "std::vector" ,&pXonSideB,128000,1);
+  histoManager.GetTree()->Branch("pY_on_B", "std::vector" ,&pYonSideB,128000,1);
+  histoManager.GetTree()->Branch("pZ_on_B", "std::vector" ,&pZonSideB,128000,1);
+  histoManager.GetTree()->Branch("impact_parameter", &b, "impact_parameter/f");
+  histoManager.GetTree()->Branch("Ex_En_per_nucleon", &ExEn, "Ex_En_per_nucleon/f");
+  histoManager.GetTree()->Branch("id", &id, "id/i");
+ 
   //Get Z and A of nucleis
   G4int sourceA = histoManager.GetSourceA();
-  G4int sourceZ = histoManager.GetSourceZ();
+  G4int sourceAb = histoManager.GetSourceAb();
+
+//Parameters for ALADIN parametrizations
+G4double e_0=8*MeV;//MeV     
+G4double sigma0 = 0.2;//should fit our results
+G4double c0 = 1.3; // From Bondorf 1995
+	   
+//Starting of modeling
+//###########################################################################################s#######################################
   
 
-//Starting of modeling
-//##################################################################################################################################
-  G4ExcitationHandler handler; 
+  G4ExcitationHandler* handler = new G4ExcitationHandler;
 
 //Setting up Glauber code
- G4float omega = -1;
-  G4float signn = 42.2; //in mb
+  histoManager.CalcXsectNN();
+  G4float omega = 0;
+  G4float signn = histoManager.GetXsectNN();  
 
-  TGlauberMC *mcg=new TGlauberMC("Pb","Pb",signn,omega);
+
+  TGlauberMC *mcg=new TGlauberMC(histoManager.GetSysA(),histoManager.GetSysB(),signn,omega);
   mcg->SetMinDistance(0);
   mcg->SetNodeDistance(0);
   mcg->SetCalcLength(0);
   mcg->SetCalcArea(0);
   mcg->SetCalcCore(0);
   mcg->SetDetail(99);
-
+ 
+  	
+  histoManager.CalcHyppGeomHisto();
+  
+  G4double HyppGeomArray[100];
+  G4double HyppGeomArrayB[100];
 
   for(G4int count=0;count<histoManager.GetIterations() ;count++){
   
-
-//An event generated by GlauberMC should be here.
+  id = count;
+  
+  //An event generated by GlauberMC is here.
   mcg->Run(1);  
 
-  //Side A
+  //Side A$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
   TGlauNucleus *nucA   = mcg->GetNucleusA(); 
   G4int NpartA = mcg->GetNpartA();
   b = mcg->GetB();
-  Npart_on_A = NpartA;
 
   
   G4int A = nucA->GetN() - NpartA;
-  G4int Z = G4int(A*(G4double(sourceZ)/G4double(sourceA)));
+  histoManager.CalcHyppGeomArray(A);
+  
+  G4double norm = 0; 
+  for(G4int i=0; i<100; i++){
+  HyppGeomArray[i] = histoManager.GetHyppGeomArray(i);
+  }
+ 
+  for(G4int i=0; i<100; i++){
+  norm	+=HyppGeomArray[i];
+  }
+ 
+  
+  for(G4int i=0; i<100; i++){
+  HyppGeomArray[i] *= 1./norm;
+  }
+
+   CLHEP::RandGeneral HyppGeom(new CLHEP::RanluxEngine,HyppGeomArray,100);
+   
+
+
+    G4int Z = G4int(HyppGeom.shoot()*100); 
+    while(Z>A){Z = G4int(HyppGeom.shoot()*100);}  
+  
+
 
   G4double Ebound=40; //Maximum exitation energy per hole, MeV
   
   G4int N=1000; //Number of points at level density
+  
   G4double ExcitationEnergyDistribution[N];
   //Excitation energy level density array creation
 if(histoManager.GetStatType()<1.5){
@@ -158,9 +216,7 @@ else{
 }
 
 
-  G4ThreeVector p3null(0.0,0.0,0.0);
-
-
+//~~~~~~~~~~~~~~GoldhaberModel~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
   G4double totalNumFragments = 0.;
   G4int thisEventNumFragments = 0;
   
@@ -175,40 +231,50 @@ else{
     
     if(histoManager.GetStatType()<2.5){
      //Gaimard-Schmidt and Ericson distributions
-      if(histoManager.GetStatType()>1.5  && A < 147 || histoManager.GetStatType()<1.5  && A < 0  ){energy = 8*(1+0.004*randGauss.shoot())*A;}
+      if(histoManager.GetStatType()>1.5  && A < 0 || histoManager.GetStatType()<1.5  && A < 0  ){energy = 8*(1+0.004*randGauss.shoot())*A;}
       else{
        energy = randGeneral.shoot()*(histoManager.GetUpEn()-histoManager.GetLowEn())+histoManager.GetLowEn();
       }    
     }
     else{
    //ALADIN parametrisation
-     G4double e_0=8;//MeV
      G4double alpha = G4double(A)/G4double(sourceA);
-     G4double sigma0 = 0.002;//should fit our results
-     G4double c0 = 1.3; // From Bondorf 1995
      G4double sigma1 = randGauss.shoot()*sigma0*(1+c0*(1-alpha));
      G4double alpha1 = alpha + sigma1;
      energy = e_0*A*pow(1-alpha1 ,0.5);
+ 	while(energy!=energy){
+	     		sigma1 = randGauss.shoot()*sigma0*(1+c0*(1-alpha));
+	     		alpha1 = alpha + sigma1;
+	     		energy = e_0*A*pow(1-alpha1 ,0.5);
+		}
     }
-    
+       
+
+    G4double GoldhaberDev0 = energy/G4double(A)*938*MeV;
+    //G4double GoldhaberDev0 = 90*MeV;
+    G4double GoldhaberDev = GoldhaberDev0*pow(G4double(A*NpartA)/G4double(sourceA-1), 0.5);
+    CLHEP::RandGauss   randGoldhaber(0,GoldhaberDev);
+    CLHEP::RandFlat    randFlat(new CLHEP::RanluxEngine);
 
     histoManager.GetHisto2(1)->Fill(energy/G4double(A), G4double(A)/G4double(sourceA));
-
+    ExEn = energy/G4double(A);
+    
+  G4double p = randGoldhaber.shoot();
+  G4double theta = randFlat.shoot(1)*2*3.141592;
+  G4double px = p*sin(theta);
+  G4double py = p*cos(theta);
+  G4double pz = pow((histoManager.GetKinEn()+2*938*histoManager.GetSourceA()*MeV)*histoManager.GetKinEn(),0.5);
   G4double NuclearMass = G4NucleiProperties::GetNuclearMass(A,Z) + energy;
-  G4LorentzVector p4(0.0,0.0,0.0,NuclearMass);
+  G4LorentzVector p4(px,py,pz ,pow(pow(NuclearMass,2)+pow(pz,2)+pow(p,2),0.5));
   G4Fragment aFragment(A,Z,p4);
                                                           
-      G4ThreeVector p3cons;
-      p3cons = p3null;
-      G4double p3consMagnitude = 0.;
-
       G4int totCharge = 0;
       G4int totBarNumber =0;
       G4int RestFragmentZ=Z;
       G4int RestFragmentA=A;
 	
 
-      G4ReactionProductVector* theProduct = handler.BreakItUp(aFragment);
+      G4ReactionProductVector* theProduct = handler->BreakItUp(aFragment);
 
       thisEventNumFragments = theProduct->size();
 
@@ -227,26 +293,37 @@ else{
           G4double thisFragmentA = 0;
 	  
 	 const G4ParticleDefinition* pd = (*iVector)->GetDefinition();
-	  
+
 	  G4String particleEmitted =  pd->GetParticleName();
 	  
          if ( particleEmitted != "gamma" ) {
 	     thisFragmentZ = pd->GetAtomicNumber();
              thisFragmentA = pd->GetAtomicMass(); 
-          }
-         MassOnSideA.push_back(thisFragmentA);
+	     MassOnSideA.push_back(thisFragmentA);
+             ChargeOnSideA.push_back(thisFragmentZ);
+	     G4double pXonA = ((*iVector)->GetMomentum().x()+p4.x())/MeV;
+	     G4double pYonA = ((*iVector)->GetMomentum().y()+p4.y())/MeV;
+	     G4double pZonA = ((*iVector)->GetMomentum().z()+p4.z())/MeV;
+             pXonSideA.push_back(pXonA); 
+             pYonSideA.push_back(pYonA);
+             pZonSideA.push_back(pZonA);   
+	 }
          
 	 RestFragmentZ=RestFragmentZ-thisFragmentZ;
 	 RestFragmentA=RestFragmentA-thisFragmentA;
 	 
     	  histoManager.GetHisto(6)->Fill(thisFragmentZ);
-          if(thisEventNumFragments > 3){histoManager.GetHisto(8)->Fill(thisFragmentZ);}
           histoManager.GetHisto(7)->Fill(thisFragmentA);
 	  histoManager.GetHisto2(2)->Fill(thisFragmentZ,thisFragmentA);
           delete (*iVector);
         }
 	  MassOnSideA.push_back(RestFragmentA);
- 	  histoManager.GetHisto(6)->Fill(RestFragmentZ);
+	  ChargeOnSideA.push_back(RestFragmentZ);
+          pXonSideA.push_back(p4.x()); 
+          pYonSideA.push_back(p4.y());
+          pZonSideA.push_back(p4.z());
+ 	  
+	  histoManager.GetHisto(6)->Fill(RestFragmentZ);
           histoManager.GetHisto(7)->Fill(RestFragmentA);
 	  histoManager.GetHisto2(2)->Fill(RestFragmentZ,RestFragmentA);
           
@@ -255,48 +332,87 @@ else{
 //$$$$$$$$$$$$$$$//Side B//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
       TGlauNucleus *nucB   = mcg->GetNucleusB(); 
       G4int NpartB = mcg->GetNpartB();
-      Npart_on_B = NpartB;
       
       
       G4int Ab = nucB->GetN() - NpartB;
-      G4int Zb = G4int(Ab*(G4double(sourceZ)/G4double(sourceA)));
-      histoManager.GetHisto2(3)->Fill(A,Ab);
+
+  histoManager.CalcHyppGeomArrayB(Ab);
+  
+  G4double normB = 0; 
+  for(G4int i=0; i<100; i++){
+  HyppGeomArrayB[i] = histoManager.GetHyppGeomArrayB(i);
+  }
+ 
+  for(G4int i=0; i<100; i++){
+  normB	+=HyppGeomArrayB[i];
+  }
+ 
+  
+  for(G4int i=0; i<100; i++){
+  HyppGeomArrayB[i] *= 1./normB;
+  }
+
+   CLHEP::RandGeneral HyppGeomB(new CLHEP::RanluxEngine, HyppGeomArrayB,100);
+    
+   G4int Zb = G4int(HyppGeomB.shoot()*100); 
+   while(Zb>Ab){Zb = G4int(HyppGeomB.shoot()*100);}  
+
+     //Excitation energy array for side B
+      G4double ExcitationEnergyDistributionB[N];
+     //Excitation energy level density array creation
+	if(histoManager.GetStatType()<1.5){
+	   for(G4int n=0; n<N; n++){
+	     G4double s=Ericson(G4double(n)*((histoManager.GetUpEnB()-histoManager.GetLowEnB())/G4double(N)), Ebound, Ab, sourceAb )*(histoManager.GetUpEnB()-histoManager.GetLowEnB())/N;
+	     ExcitationEnergyDistributionB[n]=s;
+	   }
+	  }
+	else{
+	   for(G4int n=0; n<N; n++){
+	     ExcitationEnergyDistributionB[n]=GaimardSchmidt(G4double(n)*((histoManager.GetUpEnB()-histoManager.GetLowEnB())/G4double(N)), Ebound, Ab, sourceAb )*(histoManager.GetUpEnB()-histoManager.GetLowEnB())/N;
+	   }
+	}
 	
+         CLHEP::RandGeneral randGeneralB(ExcitationEnergyDistributionB,N);
          G4double energyB = 0;
 	    
 	    if(histoManager.GetStatType()<2.5){
 	    //Gaimard-Schmidt and Ericson distributions
-	       energyB = randGeneral.shoot()*(histoManager.GetUpEn()-histoManager.GetLowEn())+histoManager.GetLowEn();
+	       energyB = randGeneralB.shoot()*(histoManager.GetUpEnB()-histoManager.GetLowEnB())+histoManager.GetLowEnB();
 	    }
 	    else{
 	   //ALADIN parametrisation
-	     G4double e_0=8;//MeV
-	     G4double alpha = G4double(A)/G4double(sourceA);
-	     G4double sigma0 = 0.002;//should fit our results
-	     G4double c0 = 1.3; // From Bondorf 1995
-	     G4double sigma1 = randGauss.shoot()*sigma0*(1+c0*(1-alpha));
-	     G4double alpha1 = alpha + sigma1;
-	     energyB = e_0*A*pow(1-alpha1 ,0.5);
-	    }
-	
-  G4double NuclearMassB = G4NucleiProperties::GetNuclearMass(Ab,Zb) + energyB;
-  G4LorentzVector p4b(0.0,0.0,0.0,NuclearMassB);
-  G4Fragment aFragmentB(Ab,Zb,p4);
-                                                          
-      G4ThreeVector p3consB;
-      p3consB = p3null;
-      G4double p3consMagnitudeB = 0.;
+	     G4double alphaB = G4double(Ab)/G4double(sourceAb);
+	     G4double sigma1B = randGauss.shoot()*sigma0*(1+c0*(1-alphaB));
+	     G4double alpha1B = alphaB + sigma1B;
+	     energyB = e_0*Ab*pow(1-alpha1B ,0.5);
+		while(energyB!=energyB){
+	     		sigma1B = randGauss.shoot()*sigma0*(1+c0*(1-alphaB));
+	     		alpha1B = alphaB + sigma1B;
+	     		energyB = e_0*Ab*pow(1-alpha1B ,0.5);
+		}
+	    }	
 
+	histoManager.GetHisto2(1)->Fill(energyB/G4double(Ab), G4double(Ab)/G4double(sourceAb));
+    	
+	
+  G4double pxB = -px;
+  G4double pyB = -py;
+  G4double pzB = 0; 
+  
+  G4double NuclearMassB = G4NucleiProperties::GetNuclearMass(Ab,Zb) + energyB;
+  G4LorentzVector p4b(pxB,pyB,pzB,pow(pow(NuclearMassB,2)+pow(pxB,2)+pow(pyB,2),0.5));
+  G4Fragment aFragmentB(Ab,Zb,p4b);
+                               
       G4int RestFragmentZb=Zb;
       G4int RestFragmentAb=Ab;
         
 
-      G4ReactionProductVector* theProductB = handler.BreakItUp(aFragmentB);
+      G4ReactionProductVector* theProductB = handler->BreakItUp(aFragmentB);
       
       for (G4ReactionProductVector::iterator iVector = theProductB->begin(); iVector != theProductB->end(); ++iVector)
 	{
-          G4int thisFragmentZb = 0;
-          G4int thisFragmentAb = 0;
+         G4int thisFragmentZb = 0;
+         G4int thisFragmentAb = 0;
 	  
 	 const G4ParticleDefinition* pdB = (*iVector)->GetDefinition();
 	  
@@ -305,22 +421,34 @@ else{
          if ( particleEmittedB != "gamma" ) {
 	     thisFragmentZb = pdB->GetAtomicNumber();
              thisFragmentAb = pdB->GetAtomicMass(); 
-          }
-         MassOnSideB.push_back(thisFragmentAb);         
-
+	     MassOnSideB.push_back(thisFragmentAb);         
+	     ChargeOnSideB.push_back(thisFragmentZb);         
+	     G4double pXonB = ((*iVector)->GetMomentum().x()+p4b.x())/MeV;
+	     G4double pYonB = ((*iVector)->GetMomentum().y()+p4b.y())/MeV;
+	     G4double pZonB = ((*iVector)->GetMomentum().z()+p4b.z())/MeV;
+             pXonSideB.push_back(pXonB); 
+             pYonSideB.push_back(pYonB);
+             pZonSideB.push_back(pZonB);   
+          }	
+         
 	 RestFragmentZb=RestFragmentZb-thisFragmentZb;
 	 RestFragmentAb=RestFragmentAb-thisFragmentAb;
-	 
-    	  histoManager.GetHisto(6)->Fill(thisFragmentZb);
-          if(thisEventNumFragments > 3){histoManager.GetHisto(8)->Fill(thisFragmentZb);}
-          histoManager.GetHisto(7)->Fill(thisFragmentAb);
-	  histoManager.GetHisto2(2)->Fill(thisFragmentZb,thisFragmentAb);
+	  
+    	  histoManager.GetHisto(0)->Fill(thisFragmentZb);
+          //if(thisEventNumFragments > 3){histoManager.GetHisto(8)->Fill(thisFragmentZb);}
+          //histoManager.GetHisto(7)->Fill(thisFragmentAb);
+	  //histoManager.GetHisto2(2)->Fill(thisFragmentZb,thisFragmentAb);
+
           delete (*iVector);
         }
 	  MassOnSideB.push_back(RestFragmentAb);
- 	  histoManager.GetHisto(6)->Fill(RestFragmentZb);
-          histoManager.GetHisto(7)->Fill(RestFragmentAb);
-	  histoManager.GetHisto2(2)->Fill(RestFragmentZb,RestFragmentAb);
+	  ChargeOnSideB.push_back(RestFragmentZb);
+ 	  histoManager.GetHisto(0)->Fill(RestFragmentZb);
+	  pXonSideB.push_back(p4b.x()); 
+          pYonSideB.push_back(p4b.y());
+          pZonSideB.push_back(p4b.z());
+          //histoManager.GetHisto(7)->Fill(RestFragmentAb);
+	  //histoManager.GetHisto2(2)->Fill(RestFragmentZb,RestFragmentAb);
           
       delete theProductB;      
  //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -328,12 +456,13 @@ else{
   histoManager.GetTree()->Fill();
   MassOnSideA.clear();
   MassOnSideB.clear();  
-  
+  ChargeOnSideB.clear(); 
+  ChargeOnSideA.clear();
   }
-  
-
-  
-       //histoManager.NormalizeHisto();
+G4cout<<"----> collided "<<histoManager.GetIterations()<<" nuclei "<<histoManager.GetSysA()<< " with " << histoManager.GetSysB() <<" at N-N x-section "<<signn<<" mb"<<G4endl;   
+G4cout<<"----> total x-sect = "<<mcg->GetTotXSect()<< " +- " << mcg->GetTotXSectErr() <<" b";
+      
+      histoManager.FillConditionsTree(mcg->GetTotXSect());
       histoManager.CleanHisto();
  
 

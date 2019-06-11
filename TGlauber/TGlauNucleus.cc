@@ -117,22 +117,23 @@ void TGlauNucleus::Draw(Double_t xs, Int_t colp, Int_t cols)
 void TGlauNucleus::Lookup(const char* name)
 {
   SetName(name);
-
   TString tmp(name);
-
-  Double_t r0 = 0;
-  Double_t r1 = 0;
-  Double_t r2 = 0;
+  Double_t r0=0, r1=0, r2=0;
 
   if      (TString(name) == "p")       {fN = 1;   fR = 0.234;      fA = 0;      fW =  0;       fF = 0;  fZ=1;}
   else if (TString(name) == "pg")      {fN = 1;   fR = 0.514;      fA = 0;      fW =  0;       fF = 9;  fZ=1;} 
   else if (TString(name) == "pdg")     {fN = 1;   fR = 1;          fA = 0;      fW =  0;       fF = 10; fZ=1;} // from arXiv:1101.5953
-  else if (TString(name) == "d")       {fN = 2;   fR = 0.01;       fA = 0.5882; fW =  0;       fF = 1;  fZ=1;}
-  else if (TString(name) == "dh")      {fN = 2;   fR = 0.01;       fA = 0.5882; fW =  0;       fF = 3;  fZ=1;}
-  else if (TString(name) == "dhh")     {fN = 2;   fR = 0.01;       fA = 0.5882; fW =  0;       fF = 4;  fZ=1;}
-  else if (TString(name) == "He3")     {fN = 3;   fR = 0.01;       fA = 0.5882; fW =  0;       fF = 6;  fZ=1;}
-  else if (TString(name) == "H3")      {fN = 3;   fR = 0.01;       fA = 0.5882; fW =  0;       fF = 6;  fZ=2;}
-  else if (TString(name) == "O")       {fN = 16;  fR = 2.608;      fA = 0.513;  fW = -0.051;   fF = 1;  fZ=8;}
+  else if (TString(name) == "dpf")     {fN = 2;   fR = 0.01;       fA = 0.5882; fW =  0;       fF = 1;  fZ=1;} // deuteron 2pf (tuned to Hulthen)
+  else if (TString(name) == "dh")      {fN = 2;   fR = 0.2283;     fA = 1.1765; fW =  0;       fF = 3;  fZ=1;} // deuteron Hulthen free
+  else if (TString(name) == "d")       {fN = 2;   fR = 0.2283;     fA = 1.1765; fW =  0;       fF = 4;  fZ=1;} // deuteron Hulthen constrained
+  else if (TString(name) == "He3")     {fN = 3;   fR = 0.00;       fA = 0.0000; fW =  0;       fF = 6;  fZ=1;} // read configurations from file
+  else if (TString(name) == "H3")      {fN = 3;   fR = 0.00;       fA = 0.0000; fW =  0;       fF = 6;  fZ=2;} // read configurations from file
+  else if (TString(name) == "He4")     {fN = 4;   fR = 0.00;       fA = 0.0000; fW =  0;       fF = 6;  fZ=2;} // read configurations from file
+  else if (TString(name) == "C")       {fN = 12;  fR = 2.608;      fA = 0.513;  fW = -0.051;   fF = 6;  fZ=6;} // read configurations from file  
+  else if (TString(name) == "Ofile")       {fN = 16;  fR = 2.608;      fA = 0.513;  fW = -0.051;   fF = 6;  fZ=8;} // read configurations from file
+  else if (TString(name) == "Opar")    {fN = 16;  fR = 2.608;      fA = 0.513;  fW = -0.051;   fF = 1;  fZ=8;} // WS parameterization
+  else if (TString(name) == "O")     {fN = 16;  fR = 1.833;      fA = 1.544;  fW =  0;       fF = 15; fZ=8;} // Harmonic oscillator parameterization
+  else if (TString(name) == "Al")      {fN = 27;  fR = 3.34;       fA = 0.580;  fW = 0.0;      fF = 8;  fZ=13; fBeta2=-0.448; fBeta4=0.239;}
   else if (TString(name) == "Si")      {fN = 28;  fR = 3.34;       fA = 0.580;  fW = -0.233;   fF = 1;  fZ=14;}
   else if (TString(name) == "Si2")     {fN = 28;  fR = 3.34;       fA = 0.580;  fW =  0;       fF = 8;  fZ=14; fBeta2=-0.478; fBeta4=0.250;}
   else if (TString(name) == "S")       {fN = 32;  fR = 2.54;       fA = 2.191;  fW =  0.16;    fF = 2;  fZ=16;}
@@ -173,7 +174,7 @@ void TGlauNucleus::Lookup(const char* name)
 
   switch (fF) {
     case 0: // Proton exp
-      fFunc1 = new TF1("prot","x*x*exp(-x/[0])",0,5);
+      fFunc1 = new TF1(name,"x*x*exp(-x/[0])",0,5);
       fFunc1->SetParameter(0,fR);
       break;
     case 1: // 3pF
@@ -181,16 +182,13 @@ void TGlauNucleus::Lookup(const char* name)
       fFunc1->SetParameters(fR,fA,fW);
       break;
     case 2: // 3pG
-      fFunc1 = new TF1("3pg","x*x*(1+[2]*(x/[0])**2)/(1+exp((x**2-[0]**2)/[1]**2))",0,fMaxR);
+      fFunc1 = new TF1(name,"x*x*(1+[2]*(x/[0])**2)/(1+exp((x**2-[0]**2)/[1]**2))",0,fMaxR);
       fFunc1->SetParameters(fR,fA,fW);
       break;
     case 3: // Hulthen (see nucl-ex/0603010)
-      fFunc1 = new TF1("f3","x*x*([0]*[1]*([0]+[1]))/(2*pi*(pow([0]-[1],2)))*pow((exp(-[0]*x)-exp(-[1]*x))/x,2)",0,fMaxR);
-      fFunc1->SetParameters(1/4.38,1/.85);
-      break;
-    case 4: // Hulthen HIJING
-      fFunc1 = new TF1("f4","x*x*([0]*[1]*([0]+[1]))/(2*pi*(pow([0]-[1],2)))*pow((exp(-[0]*x)-exp(-[1]*x))/x,2)",0,fMaxR);
-      fFunc1->SetParameters(2/4.38,2/.85);
+    case 4: // same but constrain the neutron opposite to the proton event-by-event
+      fFunc1 = new TF1(name,"x*x*([0]*[1]*([0]+[1]))/(2*pi*(pow([0]-[1],2)))*pow((exp(-[0]*x)-exp(-[1]*x))/x,2)",0,fMaxR);
+      fFunc1->SetParameters(fR,fA);
       break;
     case 5: // Ellipsoid (Uranium)
       fFunc1 = new TF1(name,"x*x*(1+[2]*(x/[0])**2)/(1+exp((x-[0])/[1]))",0,fMaxR);
@@ -207,17 +205,17 @@ void TGlauNucleus::Lookup(const char* name)
      fFunc1 = 0; // no func: only need beta parameters and use uniform box distribution
       break;
     case 8: // Deformed nuclei, TF2 method
-      fFunc3 = new TF2("f77","x*x*TMath::Sin(y)/(1+exp((x-[0]*(1+[2]*0.315*(3*pow(cos(y),2)-1.0)+[3]*0.105*(35*pow(cos(y),4)-30*pow(cos(y),2)+3)))/[1]))",0,fMaxR,0.0,TMath::Pi());
+      fFunc3 = new TF2(name,"x*x*TMath::Sin(y)/(1+exp((x-[0]*(1+[2]*0.315*(3*pow(cos(y),2)-1.0)+[3]*0.105*(35*pow(cos(y),4)-30*pow(cos(y),2)+3)))/[1]))",0,fMaxR,0.0,TMath::Pi());
       fFunc3->SetNpx(120);
       fFunc3->SetNpy(120);
       fFunc3->SetParameters(fR,fA,fBeta2,fBeta4);
       break;
     case 9: // Proton gaus
-      fFunc1 = new TF1("prot","x*x*exp(-x*x/[0]/[0]/2)",0,5);
+      fFunc1 = new TF1(name,"x*x*exp(-x*x/[0]/[0]/2)",0,5);
       fFunc1->SetParameter(0,fR);
       break;
     case 10: // Proton dgaus
-      fFunc1 = new TF1("prot","x*x*((1-[0])/[1]^3*exp(-x*x/[1]/[1])+[0]/(0.4*[1])^3*exp(-x*x/(0.4*[1])^2))",0,5);
+      fFunc1 = new TF1(name,"x*x*((1-[0])/[1]^3*exp(-x*x/[1]/[1])+[0]/(0.4*[1])^3*exp(-x*x/(0.4*[1])^2))",0,5);
       fFunc1->SetParameter(0,0.5);
       fFunc1->SetParameter(1,fR);
       break;
@@ -242,12 +240,16 @@ void TGlauNucleus::Lookup(const char* name)
       fSmax=0.1;
       break;
     case 14: // Deformed nuclei, TF2 method, reweighted
-      fFunc3 = new TF2("f77","x*x*TMath::Sin(y)/(1+exp((x-[0]*(1+[2]*0.315*(3*pow(cos(y),2)-1.0)+[3]*0.105*(35*pow(cos(y),4)-30*pow(cos(y),2)+3)))/[1]))/([4]+[5]*x+[6]*x^2)",0,fMaxR,0.0,TMath::Pi());
+      fFunc3 = new TF2(name,"x*x*TMath::Sin(y)/(1+exp((x-[0]*(1+[2]*0.315*(3*pow(cos(y),2)-1.0)+[3]*0.105*(35*pow(cos(y),4)-30*pow(cos(y),2)+3)))/[1]))/([4]+[5]*x+[6]*x^2)",0,fMaxR,0.0,TMath::Pi());
       fFunc3->SetNpx(120);
       fFunc3->SetNpy(120);
       fFunc3->SetParameters(fR,fA,fBeta2,fBeta4,r0,r1,r2);
       fRecenter=1;
       fSmax=0.1;
+      break;
+    case 15: // harmonic oscillator model 
+      fFunc1 = new TF1(name,"x^2*(1+[0]*(x^2/[1]^2))*exp(-x^2/[1]^2)",0,fMaxR);
+      fFunc1->SetParameters(fR,fA);
       break;
     default:
       cerr << "Could not find function type " << fF << endl;
