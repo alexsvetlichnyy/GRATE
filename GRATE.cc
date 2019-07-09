@@ -102,26 +102,36 @@ int main()
   std::vector<G4float> pXonSideB;
   std::vector<G4float> pYonSideB;
   std::vector<G4float> pZonSideB;
+  std::vector<G4float> pseudorapidity_A;
+  std::vector<G4float> pseudorapidity_B;
   G4float b;
   G4float ExEn;
   G4int id;
 
   // Histograms will be booked now.
   histoManager.BookHisto();
-
+  histoManager.GetTree()->Branch("id", &id, "id/i");
   histoManager.GetTree()->Branch("A_on_A", "std::vector" ,&MassOnSideA);
   histoManager.GetTree()->Branch("A_on_B", "std::vector" ,&MassOnSideB);
   histoManager.GetTree()->Branch("Z_on_A", "std::vector" ,&ChargeOnSideA);
   histoManager.GetTree()->Branch("Z_on_B", "std::vector" ,&ChargeOnSideB);
+
+if(histoManager.WritePseudorapidity()){
+  histoManager.GetTree()->Branch("pseudorapidity_on_A", "std::vector", &pseudorapidity_A);
+  histoManager.GetTree()->Branch("pseudorapidity_on_B", "std::vector", &pseudorapidity_B);
+  }
+if(histoManager.WriteMomentum()){
   histoManager.GetTree()->Branch("pX_on_A", "std::vector" ,&pXonSideA,128000,1);
   histoManager.GetTree()->Branch("pY_on_A", "std::vector" ,&pYonSideA,128000,1);
   histoManager.GetTree()->Branch("pZ_on_A", "std::vector" ,&pZonSideA,128000,1);
   histoManager.GetTree()->Branch("pX_on_B", "std::vector" ,&pXonSideB,128000,1);
   histoManager.GetTree()->Branch("pY_on_B", "std::vector" ,&pYonSideB,128000,1);
   histoManager.GetTree()->Branch("pZ_on_B", "std::vector" ,&pZonSideB,128000,1);
+  }
+
   histoManager.GetTree()->Branch("impact_parameter", &b, "impact_parameter/f");
   histoManager.GetTree()->Branch("Ex_En_per_nucleon", &ExEn, "Ex_En_per_nucleon/f");
-  histoManager.GetTree()->Branch("id", &id, "id/i");
+  
  
   //Get Z and A of nucleis
   G4int sourceA = histoManager.GetSourceA();
@@ -140,7 +150,7 @@ G4double c0 = 1.3; // From Bondorf 1995
 
 //Setting up Glauber code
   histoManager.CalcXsectNN();
-  G4float omega = 0;
+  G4float omega = -1;
   G4float signn = histoManager.GetXsectNN();  
 
 
@@ -188,10 +198,10 @@ G4double c0 = 1.3; // From Bondorf 1995
   HyppGeomArray[i] *= 1./norm;
   }
 
-   CLHEP::RandGeneral HyppGeom(new CLHEP::RanluxEngine,HyppGeomArray,100);
+  
+
+    CLHEP::RandGeneral HyppGeom(new CLHEP::RanluxEngine,HyppGeomArray,100);
    
-
-
     G4int Z = G4int(HyppGeom.shoot()*100); 
     while(Z>A){Z = G4int(HyppGeom.shoot()*100);}  
   
@@ -203,18 +213,34 @@ G4double c0 = 1.3; // From Bondorf 1995
   
   G4double ExcitationEnergyDistribution[N];
   //Excitation energy level density array creation
-if(histoManager.GetStatType()<1.5){
-   for(G4int n=0; n<N; n++){
-     G4double s=Ericson(G4double(n)*((histoManager.GetUpEn()-histoManager.GetLowEn())/G4double(N)), Ebound, A, sourceA )*(histoManager.GetUpEn()-histoManager.GetLowEn())/N;
-     ExcitationEnergyDistribution[n]=s;
-   }
-  }
-else{
-   for(G4int n=0; n<N; n++){
-     ExcitationEnergyDistribution[n]=GaimardSchmidt(G4double(n)*((histoManager.GetUpEn()-histoManager.GetLowEn())/G4double(N)), Ebound, A, sourceA )*(histoManager.GetUpEn()-histoManager.GetLowEn())/N;
-   }
-}
 
+
+	switch(histoManager.GetStatType())
+	{
+	case 1:
+		{
+		for(G4int n=0; n<N; n++){
+    		G4double s=Ericson(G4double(n)*((histoManager.GetUpEn()-histoManager.GetLowEn())/G4double(N)), Ebound, A, sourceA )*(histoManager.GetUpEn()-histoManager.GetLowEn())/N;
+     		ExcitationEnergyDistribution[n]=s;
+					}
+		break;
+ 		}
+	case 2:
+		{
+		 for(G4int n=0; n<N; n++){
+     		ExcitationEnergyDistribution[n]=GaimardSchmidt(G4double(n)*((histoManager.GetUpEn()-histoManager.GetLowEn())/G4double(N)), Ebound, A, sourceA )*(histoManager.GetUpEn()-histoManager.GetLowEn())/N;
+ 					  }
+		break;
+		}
+	default:
+		{
+		for(G4int n=0; n<N; n++){
+    		G4double s=Ericson(G4double(n)*((histoManager.GetUpEn()-histoManager.GetLowEn())/G4double(N)), Ebound, A, sourceA )*(histoManager.GetUpEn()-histoManager.GetLowEn())/N;
+     		ExcitationEnergyDistribution[n]=s;
+					}	
+		break;
+		}
+	}
 
 //~~~~~~~~~~~~~~GoldhaberModel~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
   G4double totalNumFragments = 0.;
@@ -228,27 +254,39 @@ else{
     CLHEP::RandGauss   randGauss(0,1);
 	      
     G4double energy = 0;
-    
-    if(histoManager.GetStatType()<2.5){
-     //Gaimard-Schmidt and Ericson distributions
-      if(histoManager.GetStatType()>1.5  && A < 0 || histoManager.GetStatType()<1.5  && A < 0  ){energy = 8*(1+0.004*randGauss.shoot())*A;}
-      else{
-       energy = randGeneral.shoot()*(histoManager.GetUpEn()-histoManager.GetLowEn())+histoManager.GetLowEn();
-      }    
-    }
-    else{
-   //ALADIN parametrisation
-     G4double alpha = G4double(A)/G4double(sourceA);
-     G4double sigma1 = randGauss.shoot()*sigma0*(1+c0*(1-alpha));
-     G4double alpha1 = alpha + sigma1;
-     energy = e_0*A*pow(1-alpha1 ,0.5);
- 	while(energy!=energy){
-	     		sigma1 = randGauss.shoot()*sigma0*(1+c0*(1-alpha));
-	     		alpha1 = alpha + sigma1;
-	     		energy = e_0*A*pow(1-alpha1 ,0.5);
+  
+    switch(histoManager.GetStatType())
+    	{
+	case 1:
+		{//Ericson distribution
+		energy = randGeneral.shoot()*(histoManager.GetUpEn()-histoManager.GetLowEn())+histoManager.GetLowEn();
+		break;
 		}
-    }
-       
+	case 2:
+		{//Gaimard-Schmidt distributions
+     		energy = randGeneral.shoot()*(histoManager.GetUpEn()-histoManager.GetLowEn())+histoManager.GetLowEn();
+      		break;
+		}
+	case 3: 
+		{//ALADIN parametrisation
+		 G4double alpha = G4double(A)/G4double(sourceA);
+		 G4double sigma1 = randGauss.shoot()*sigma0*(1+c0*(1-alpha));
+		 G4double alpha1 = alpha + sigma1;
+		 energy = e_0*A*pow(1-alpha1 ,0.5);
+		 while(energy!=energy){
+		     		sigma1 = randGauss.shoot()*sigma0*(1+c0*(1-alpha));
+		     		alpha1 = alpha + sigma1;
+		     		energy = e_0*A*pow(1-alpha1 ,0.5);
+				}
+		break;
+		}
+	default:
+		{
+		G4cout<<"Error: ExEn statistic index is invalid."<<G4endl;
+		throw std::exception();
+		break;	
+		}
+	}
 
     G4double GoldhaberDev0 = energy/G4double(A)*938*MeV;
     //G4double GoldhaberDev0 = 90*MeV;
@@ -272,13 +310,14 @@ else{
       G4int totBarNumber =0;
       G4int RestFragmentZ=Z;
       G4int RestFragmentA=A;
+      G4float eta_A = 0;
 	
 
       G4ReactionProductVector* theProduct = handler->BreakItUp(aFragment);
 
       thisEventNumFragments = theProduct->size();
 
-      histoManager.GetHisto(2)->Fill(thisEventNumFragments);
+      histoManager.GetHisto(1)->Fill(thisEventNumFragments);
 
 
       std::cout << "### event  at " << energy/A << " MeV/nucleon" 
@@ -304,9 +343,21 @@ else{
 	     G4double pXonA = ((*iVector)->GetMomentum().x()+p4.x())/MeV;
 	     G4double pYonA = ((*iVector)->GetMomentum().y()+p4.y())/MeV;
 	     G4double pZonA = ((*iVector)->GetMomentum().z()+p4.z())/MeV;
+	     eta_A = 0.5*log((std::sqrt(pXonA*pXonA+pYonA*pYonA+pZonA*pZonA) + pZonA)/(std::sqrt(pXonA*pXonA+pYonA*pYonA+pZonA*pZonA) -pZonA));
              pXonSideA.push_back(pXonA); 
              pYonSideA.push_back(pYonA);
-             pZonSideA.push_back(pZonA);   
+             pZonSideA.push_back(pZonA); 
+	     pseudorapidity_A.push_back(eta_A);
+	     
+		
+		if(thisFragmentZ == 0){histoManager.GetHisto2(3)->Fill(pXonA,pYonA);
+					      histoManager.GetHisto(2)->Fill(pZonA);}
+		else if(thisFragmentZ == 1 && thisFragmentA == 1 ){histoManager.GetHisto2(4)->Fill(pXonA,pYonA); 
+									  histoManager.GetHisto(3)->Fill(pZonA);}	
+		else if(thisFragmentZ < 20 && thisFragmentZ > 2){histoManager.GetHisto2(5)->Fill(pXonA,pYonA);
+									histoManager.GetHisto(4)->Fill(pZonA);} 
+		else{histoManager.GetHisto2(6)->Fill(pXonA,pYonA);
+			    histoManager.GetHisto(5)->Fill(pZonA);} 
 	 }
          
 	 RestFragmentZ=RestFragmentZ-thisFragmentZ;
@@ -317,11 +368,14 @@ else{
 	  histoManager.GetHisto2(2)->Fill(thisFragmentZ,thisFragmentA);
           delete (*iVector);
         }
+	  eta_A= 0.5*log((std::sqrt(p4.x()*p4.x()+p4.y()*p4.y()+p4.z()*p4.z())+p4.z())/(std::sqrt(p4.x()*p4.x()+p4.y()*p4.y()+p4.z()*p4.z()) - p4.z()));
 	  MassOnSideA.push_back(RestFragmentA);
 	  ChargeOnSideA.push_back(RestFragmentZ);
           pXonSideA.push_back(p4.x()); 
           pYonSideA.push_back(p4.y());
           pZonSideA.push_back(p4.z());
+	  pseudorapidity_A.push_back(eta_A);
+	     
  	  
 	  histoManager.GetHisto(6)->Fill(RestFragmentZ);
           histoManager.GetHisto(7)->Fill(RestFragmentA);
@@ -405,6 +459,7 @@ else{
                                
       G4int RestFragmentZb=Zb;
       G4int RestFragmentAb=Ab;
+      G4float eta_B=0;
         
 
       G4ReactionProductVector* theProductB = handler->BreakItUp(aFragmentB);
@@ -426,9 +481,11 @@ else{
 	     G4double pXonB = ((*iVector)->GetMomentum().x()+p4b.x())/MeV;
 	     G4double pYonB = ((*iVector)->GetMomentum().y()+p4b.y())/MeV;
 	     G4double pZonB = ((*iVector)->GetMomentum().z()+p4b.z())/MeV;
+	     eta_B = 0.5*log((std::sqrt(pXonB*pXonB+pYonB*pYonB+pZonB*pZonB) + pZonB)/(std::sqrt(pXonB*pXonB+pYonB*pYonB+pZonB*pZonB) -pZonB));
              pXonSideB.push_back(pXonB); 
              pYonSideB.push_back(pYonB);
-             pZonSideB.push_back(pZonB);   
+             pZonSideB.push_back(pZonB);
+	     pseudorapidity_B.push_back(eta_B);   
           }	
          
 	 RestFragmentZb=RestFragmentZb-thisFragmentZb;
@@ -441,12 +498,14 @@ else{
 
           delete (*iVector);
         }
+	  eta_B= 0.5*log((std::sqrt(p4b.x()*p4b.x()+p4b.y()*p4b.y()+p4b.z()*p4b.z())+p4b.z())/(std::sqrt(p4b.x()*p4b.x()+p4b.y()*p4b.y()+p4b.z()*p4b.z()) - p4b.z()));
 	  MassOnSideB.push_back(RestFragmentAb);
 	  ChargeOnSideB.push_back(RestFragmentZb);
  	  histoManager.GetHisto(0)->Fill(RestFragmentZb);
 	  pXonSideB.push_back(p4b.x()); 
           pYonSideB.push_back(p4b.y());
           pZonSideB.push_back(p4b.z());
+	  pseudorapidity_B.push_back(eta_B);  
           //histoManager.GetHisto(7)->Fill(RestFragmentAb);
 	  //histoManager.GetHisto2(2)->Fill(RestFragmentZb,RestFragmentAb);
           

@@ -52,6 +52,8 @@ class GRATEmanager
   inline G4double GetUpEnB() {return upperLimitExEnB;};
   inline G4double GetHyppGeomArray(G4int id) {return HyppGeomArray[id];};
   inline G4double GetHyppGeomArrayB(G4int id) {return HyppGeomArrayB[id];};
+  inline G4bool   WriteMomentum() {return wM;};
+  inline G4bool   WritePseudorapidity() {return wP;};
 
 
   
@@ -88,13 +90,17 @@ class GRATEmanager
 
     G4double XsectNN;
 
-    G4double KinEn;	
+    G4double KinEn;
+    G4double pZ;	
     G4double lowLimitExEn;
     G4double upperLimitExEn;
     G4double lowLimitExEnB;
     G4double upperLimitExEnB;
     G4int    binsExEn;
-    G4int    eventsPerBin;      
+    G4int    eventsPerBin;   
+
+    G4bool   wM;
+    G4bool   wP;   
 
     std::ifstream XsectFile;
 
