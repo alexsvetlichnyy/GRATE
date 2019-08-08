@@ -89,7 +89,7 @@ GRATEmanager::GRATEmanager()
  std::cin>>wP;
 
  while ( (iterations<0) || (iterations>10000000) ) {
-    std::cout<<"Please enter number of iterations: ";
+    std::cout<<"Please enter number of events to be generated: ";
     std::cin >> iterations;
 
   } 
@@ -131,10 +131,10 @@ void GRATEmanager::BookHisto()
 
  histo[1] =  new TH1D("M distr"," ;M;entries",100, -0.5, 100+0.5);
 
- histo[2] =  new TH1D("pz for neutrons",";pz;",100,pZ-1000, pZ+1000);
- histo[3] =  new TH1D("pz for protons"," ;pz;",100, pZ-100, pZ+100);
- histo[4] =  new TH1D("pz for IMF"," ;pz;",100, pZ-100, pZ+100);
- histo[5] =  new TH1D("pz for heavy fragments"," ;pz;",100, pZ-100, pZ+100);
+ histo[2] =  new TH1D("pz for neutrons",";pz;",1000,pZ-1000, pZ+1000);
+ histo[3] =  new TH1D("pz for protons"," ;pz;",1000, pZ-1000, pZ+1000);
+ histo[4] =  new TH1D("pz for IMF"," ;pz;",10000, -5*1e6, 5*1e6);
+ histo[5] =  new TH1D("pz for heavy fragments"," ;pz;",10000, -5*1e6, 5*1e6);
 
 
  histo[6] =  new TH1D("Charge distruibution"," ;Z;entries",sourceZ+1,-0.5, sourceZ+0.5);

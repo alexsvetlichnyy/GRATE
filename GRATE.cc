@@ -305,14 +305,14 @@ G4double c0 = 1.3; // From Bondorf 1995
   G4double theta = randFlat.shoot(1)*2*3.141592;
   G4double px = p*sin(theta);
   G4double py = p*cos(theta);
-  G4double pz = pow((histoManager.GetKinEn()+2*init_nucl_mass_A)*histoManager.GetKinEn(),0.5);
+  G4double pz = pow((histoManager.GetKinEn()+2*init_nucl_mass_A)*histoManager.GetKinEn(),0.5)/G4double(sourceA);
   G4double NuclearMass = G4NucleiProperties::GetNuclearMass(A,Z) + energy;
   G4LorentzVector p4(px,py,pz ,pow(pow(NuclearMass,2)+pow(pz,2)+pow(p,2),0.5));
   G4Fragment aFragment(A,Z,p4);
-  G4double bbeta_z = std::sqrt(pow(pz/NuclearMass,2)/(1+pow(pz/NuclearMass,2)));
+  G4double bbeta_z = std::sqrt(pow(pz/983*MeV,2)/(1+pow(pz/983*MeV,2)));
   G4double bbeta_y = std::sqrt(pow(py/NuclearMass,2)/(1+pow(py/NuclearMass,2)));
   G4double bbeta_x = std::sqrt(pow(px/NuclearMass,2)/(1+pow(px/NuclearMass,2)));
-      G4cout<<pz<<G4endl;
+      //G4cout<<bbeta_z<<G4endl;
                                                           
       G4int totCharge = 0;
       G4int totBarNumber =0;
