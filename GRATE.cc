@@ -477,10 +477,8 @@ G4double c0 = 1.3; // From Bondorf 1995
 	histoManager.GetHisto2(1)->Fill(energyB/G4double(Ab), G4double(Ab)/G4double(sourceAb));
     	
 	
-  /*G4double pxB = -px;
-  G4double pyB = -py;*/
-  G4double pxB = 0;
-  G4double pyB = 0;
+  G4double pxB = -px;
+  G4double pyB = -py;
   G4double pzB = 0; 
   
   G4double NuclearMassB = G4NucleiProperties::GetNuclearMass(Ab,Zb) + energyB;
