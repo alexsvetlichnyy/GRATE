@@ -310,10 +310,6 @@ G4double c0 = 1.3; // From Bondorf 1995
   G4LorentzVector p4(px,py,pz ,pow(pow(NuclearMass,2)+pow(pz,2)+pow(p,2),0.5));
   G4Fragment aFragment(A,Z,p4);
   G4ThreeVector boostVector = p4.boostVector();
-  G4double bbeta_z = std::sqrt(pow(pz/NuclearMass,2)/(1+pow(pz/NuclearMass,2)));
-  G4double bbeta_y = std::sqrt(pow(py/NuclearMass,2)/(1+pow(py/NuclearMass,2)));
-  G4double bbeta_x = std::sqrt(pow(px/NuclearMass,2)/(1+pow(px/NuclearMass,2)));
-      //G4cout<<bbeta_z<<G4endl;
                                                           
       G4int totCharge = 0;
       G4int totBarNumber =0;
@@ -356,6 +352,7 @@ G4double c0 = 1.3; // From Bondorf 1995
 	     G4double pXonA = product_p4.x()/MeV;
 	     G4double pYonA = product_p4.y()/MeV;			
 	     G4double pZonA = product_p4.z()/MeV;
+	     p4 += -product_p4;
 	     
 	     eta_A = 0.5*log((std::sqrt(pXonA*pXonA+pYonA*pYonA+pZonA*pZonA) + pZonA)/(std::sqrt(pXonA*pXonA+pYonA*pYonA+pZonA*pZonA) -pZonA));
 
@@ -389,12 +386,23 @@ G4double c0 = 1.3; // From Bondorf 1995
 	  eta_A= 0.5*log((std::sqrt(p4.x()*p4.x()+p4.y()*p4.y()+p4.z()*p4.z())+p4.z())/(std::sqrt(p4.x()*p4.x()+p4.y()*p4.y()+p4.z()*p4.z()) - p4.z()));
 	  MassOnSideA.push_back(RestFragmentA);
 	  ChargeOnSideA.push_back(RestFragmentZ);
-	  G4LorentzVector rest_p4(0,0,0,G4NucleiProperties::GetNuclearMass(RestFragmentA,RestFragmentZ));
-	  rest_p4.boost(boostVector);
-          pXonSideA.push_back(rest_p4.x()); 
-          pYonSideA.push_back(rest_p4.y());
-          pZonSideA.push_back(rest_p4.z());
+	  pXonSideA.push_back(p4.x()); 
+          pYonSideA.push_back(p4.y());
+          pZonSideA.push_back(p4.z());
 	  pseudorapidity_A.push_back(eta_A);
+	
+	  
+		if(RestFragmentZ == 0){histoManager.GetHisto2(3)->Fill(p4.x(),p4.y());
+					      histoManager.GetHisto(2)->Fill(p4.x());}
+
+		else if(RestFragmentZ == 1 && RestFragmentA == 1 ){histoManager.GetHisto2(4)->Fill(p4.x(),p4.y()); 
+									  histoManager.GetHisto(3)->Fill(p4.z());}	
+
+		else if(RestFragmentZ < 20 && RestFragmentZ > 2){histoManager.GetHisto2(5)->Fill(p4.x(),p4.y());
+									histoManager.GetHisto(4)->Fill(p4.z());} 
+
+		else{histoManager.GetHisto2(6)->Fill(p4.x(),p4.y());
+			    histoManager.GetHisto(5)->Fill(p4.z());} 
 	     
  	  
 	  histoManager.GetHisto(6)->Fill(RestFragmentZ);
@@ -469,8 +477,10 @@ G4double c0 = 1.3; // From Bondorf 1995
 	histoManager.GetHisto2(1)->Fill(energyB/G4double(Ab), G4double(Ab)/G4double(sourceAb));
     	
 	
-  G4double pxB = -px;
-  G4double pyB = -py;
+  /*G4double pxB = -px;
+  G4double pyB = -py;*/
+  G4double pxB = 0;
+  G4double pyB = 0;
   G4double pzB = 0; 
   
   G4double NuclearMassB = G4NucleiProperties::GetNuclearMass(Ab,Zb) + energyB;
@@ -508,6 +518,7 @@ G4double c0 = 1.3; // From Bondorf 1995
 	     G4double pXonB = product_p4b.x()/MeV;
 	     G4double pYonB = product_p4b.y()/MeV;			
 	     G4double pZonB = product_p4b.z()/MeV;
+	     p4b+= -product_p4b;
 	 
 	     eta_B = 0.5*log((std::sqrt(pXonB*pXonB+pYonB*pYonB+pZonB*pZonB) + pZonB)/(std::sqrt(pXonB*pXonB+pYonB*pYonB+pZonB*pZonB) -pZonB));
              pXonSideB.push_back(pXonB); 
@@ -530,11 +541,12 @@ G4double c0 = 1.3; // From Bondorf 1995
 	  MassOnSideB.push_back(RestFragmentAb);
 	  ChargeOnSideB.push_back(RestFragmentZb);
  	  histoManager.GetHisto(0)->Fill(RestFragmentZb);
-	  G4LorentzVector rest_p4b(0,0,0,G4NucleiProperties::GetNuclearMass(RestFragmentAb,RestFragmentZb));
-	  rest_p4b.boost(boostVectorB);
-	  pXonSideB.push_back(rest_p4b.x()); 
-          pYonSideB.push_back(rest_p4b.y());
-          pZonSideB.push_back(rest_p4b.z());
+	  //G4LorentzVector rest_p4b(0,0,0,G4NucleiProperties::GetNuclearMass(RestFragmentAb,RestFragmentZb));
+	  //rest_p4b.boost(boostVectorB);
+	  
+	  pXonSideB.push_back(p4b.x()); 
+          pYonSideB.push_back(p4b.y());
+          pZonSideB.push_back(p4b.z());
 	  pseudorapidity_B.push_back(eta_B);  
           //histoManager.GetHisto(7)->Fill(RestFragmentAb);
 	  //histoManager.GetHisto2(2)->Fill(RestFragmentZb,RestFragmentAb);
