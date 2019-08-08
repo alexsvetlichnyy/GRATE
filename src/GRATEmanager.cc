@@ -117,7 +117,7 @@ void GRATEmanager::BookHisto()
 
 // Open a file to keep histograms inside it 
 
- if ( fileName == "") fileName = "GRATE_"+SysA+SysB+"_"+char(KinEn/GeV)+"_GeV_"+char(iterations)+"_events";
+ if ( fileName == "") fileName = "GRATE_"+SysA+SysB+"_"+std::to_string(KinEn/GeV)+"_GeV_"+std::to_string(iterations)+"_events";
  fileType = "root";
  fileFullName = fileName+"."+fileType;
  compressionFactor = 9;
@@ -131,7 +131,7 @@ void GRATEmanager::BookHisto()
 
  histo[1] =  new TH1D("M distr"," ;M;entries",100, -0.5, 100+0.5);
 
- histo[2] =  new TH1D("pz for neutrons",";pz;",100,pZ-100, pZ+100);
+ histo[2] =  new TH1D("pz for neutrons",";pz;",100,pZ-1000, pZ+1000);
  histo[3] =  new TH1D("pz for protons"," ;pz;",100, pZ-100, pZ+100);
  histo[4] =  new TH1D("pz for IMF"," ;pz;",100, pZ-100, pZ+100);
  histo[5] =  new TH1D("pz for heavy fragments"," ;pz;",100, pZ-100, pZ+100);
@@ -270,6 +270,7 @@ void GRATEmanager::FillConditionsTree(G4double Xsect){
 
 G4double XsectTot = 0;
 G4double KineticEnergy = 0;
+G4double pz = 0;
 G4double Mass_on_A = 0;
 G4double Mass_on_B = 0;
 G4double Charge_on_A = 0;
@@ -277,13 +278,15 @@ G4double Charge_on_B = 0;
 
 modelingCo->Branch("Xsect_total", &XsectTot,"Xsect_total/d");
 modelingCo->Branch("Kinetic_energy_per_nucleon_of_projectile_in_GeV", &KineticEnergy,"Kinetic_energy_of_per_nucleon_projectile_in_GeV/d");
+modelingCo->Branch("pZ_in_MeV", &pz,"pZ_in_MeV/d");
 modelingCo->Branch("Mass_on_A", &Mass_on_A,"Mass_on_A/d");
 modelingCo->Branch("Mass_on_B", &Mass_on_B,"Mass_on_B/d");
 modelingCo->Branch("Charge_on_A", &Charge_on_A,"Charge_on_A/d");
 modelingCo->Branch("Charge_on_B", &Charge_on_B,"Charge_on_B/d");
 
 XsectTot = Xsect;
-KineticEnergy = KinEn/GeV;
+KineticEnergy = KinEn/(sourceA*GeV);
+pz = pZ/MeV;
 Mass_on_A = sourceA;
 Mass_on_B = sourceAb;
 Charge_on_A = sourceZ;
