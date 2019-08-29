@@ -13,10 +13,11 @@ GRATEmanager::GRATEmanager()
 {  
   std::cout << "######### Abrasion-Ablation model using Glauber Monte Carlo and Geant4" <<std::endl;
   
-  std::cout << "Please enter colliding nucleus name (side A). U, Pb, Au, Xe, Al, Cu, O, C is available : ";
+  std::cout << "Please enter colliding nucleus name (side A). U, Pb, Pbpn(with neutron skin) Au, Xe, Al, Cu, O, C is available : ";
   std::cin >> SysA;
 
   if(SysA =="Pb"){SysA+="*"; sourceA = 208; sourceZ = 82;}
+  else if(SysA == "Pbpn"){sourceA = 208; sourceZ = 82;}
   else if(SysA == "Cu"){SysA+="2";sourceA = 64; sourceZ = 29;}
   else if(SysA == "O"){sourceA = 16; sourceZ = 8;}
   else if(SysA == "Au"){sourceA = 197; sourceZ = 79;}
@@ -29,10 +30,11 @@ GRATEmanager::GRATEmanager()
         throw std::exception();
       }
 
-  std::cout << "Please enter colliding nucleus name (side B). U, Pb, Au, Xe, Al, Cu, O, C is available : ";
+  std::cout << "Please enter colliding nucleus name (side B). U, Pb, Pbpn(with neutron skin) Au, Xe, Al, Cu, O, C is available : ";
   std::cin >> SysB;
  
   if(SysB == "Pb"){SysB+="*"; sourceAb = 208; sourceZb = 82;}
+  else if(SysB == "Pbpn"){sourceAb = 208; sourceZb = 82;}
   else if(SysB == "Cu"){sourceAb = 64; sourceZb = 29;}
   else if(SysB == "O"){sourceAb = 16; sourceZb = 8;}
   else if(SysB == "Au"){sourceAb = 197; sourceZb = 79;}
@@ -150,10 +152,6 @@ void GRATEmanager::BookHisto()
  histo2[5] = new TH2D("px vs pz for IMF", ";px;py", 100,-200,200,100,-200,200);
  histo2[6] = new TH2D("px vs pz for heavy fragments", ";px;py", 100,-200,200,100,-200,200);
  
- HyppGeomHisto2 = new TH2D("Hyppergeometrical distribution hystogram for nuclei A", "", sourceA, 0, sourceA, sourceZ, 0, sourceZ);
- 
- HyppGeomHisto2b = new TH2D("Hyppergeometrical distribution hystogram for nuclei B", "", sourceAb, 0, sourceAb, sourceZb, 0, sourceZb);
-
 }
 
 
@@ -195,76 +193,6 @@ void GRATEmanager::CleanHisto()
   delete fFile;
 }
 
-
-void GRATEmanager::CalcHyppGeomHisto()
-{
-	for( G4int remA=0; remA < sourceA; remA++){
-	for( G4int remZ=0; remZ < sourceZ; remZ++){
-            G4double weight=0;
-            
-	    if((TMath::Binomial(sourceZ, remZ) == 0) || (TMath::Binomial(sourceA-sourceZ, remA-remZ) == 0)){
-	    	weight = 0;}           
- 	    else{
-	   	weight = (TMath::Binomial(sourceZ, remZ)*TMath::Binomial(sourceA-sourceZ, remA-remZ))/TMath::Binomial(sourceA,remA);
-	    }	
-            if(weight != weight){weight = 0;}
-
-            HyppGeomHisto2->Fill(remA,remZ, weight);
-	}
-	}
-
-	for( G4int remA=0; remA < sourceAb; remA++){
-	for( G4int remZ=0; remZ < sourceZb; remZ++){
-            G4double weight=0;
-            
-	    if((TMath::Binomial(sourceZb, remZ) == 0) || (TMath::Binomial(sourceAb-sourceZb, remA-remZ) == 0)){
-	    	weight = 0;}           
- 	    else{
-	   	weight = (TMath::Binomial(sourceZb, remZ)*TMath::Binomial(sourceAb-sourceZb, remA-remZ))/TMath::Binomial(sourceAb,remA);
-	    }	
-            if(weight != weight){weight = 0;}
-
-            HyppGeomHisto2b->Fill(remA,remZ, weight);
-	}
-	}
-
-}
-
-void GRATEmanager::CalcHyppGeomArray(G4int RestNucleons)
-{
-
-	for(G4int remZ=0; remZ < sourceZ; remZ++){
-        G4int bin = HyppGeomHisto2->GetBin(int(RestNucleons), int(remZ));
-	HyppGeomArray[remZ] = HyppGeomHisto2->GetBinContent(bin); 
-	}
-
-	for(G4int i = sourceZ; i < 100; i++)
-	{
-	HyppGeomArray[i] = 0;
-	}
-}
-	
-void GRATEmanager::CalcHyppGeomArrayB(G4int RestNucleons)
-{
-if(RestNucleons == 0){
-	for(G4int i = 0; i < 100; i++)
-	{
-	HyppGeomArrayB[i] = 0;
-	}
-}
-else {
-	for(G4int remZ=0; remZ < sourceZb; remZ++){
-        G4int bin = HyppGeomHisto2b->GetBin(int(RestNucleons), int(remZ));
-	HyppGeomArrayB[remZ] = HyppGeomHisto2b->GetBinContent(bin); 
-	}
-
-	for(G4int i = sourceZb; i < 100; i++)
-	{
-	HyppGeomArrayB[i] = 0;
-	}
-}
-
-}
 
 void GRATEmanager::FillConditionsTree(G4double Xsect){
 

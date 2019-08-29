@@ -25,6 +25,8 @@
 #include "TGlauber/TGlauNucleus.hh"
 #include "TRandom.h" 
 #include "TVector3.h"
+#include "TObjArray.h"
+#include "TObject.h"
 #include "Randomize.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4Threading.hh"
@@ -47,7 +49,7 @@ int main()
    //Seting parameters for Deexcitation
   G4NuclearLevelData* fLevelData = G4NuclearLevelData::GetInstance(); 
   G4DeexPrecoParameters* fParam = fLevelData->GetParameters();
-  fParam->SetMinExPerNucleounForMF(4*MeV);
+  fParam->SetMinExPerNucleounForMF(3*MeV);
 
   G4StateManager* fStateManager = G4StateManager::GetStateManager();
    
@@ -166,11 +168,6 @@ G4double c0 = 1.3; // From Bondorf 1995
   mcg->SetCalcCore(0);
   mcg->SetDetail(99);
  
-  	
-  histoManager.CalcHyppGeomHisto();
-  
-  G4double HyppGeomArray[100];
-  G4double HyppGeomArrayB[100];
 
   for(G4int count=0;count<histoManager.GetIterations() ;count++){
   
@@ -183,32 +180,21 @@ G4double c0 = 1.3; // From Bondorf 1995
   TGlauNucleus *nucA   = mcg->GetNucleusA(); 
   G4int NpartA = mcg->GetNpartA();
   b = mcg->GetB();
+  TObjArray* nucleons=mcg->GetNucleons();
 
-  
-  G4int A = nucA->GetN() - NpartA;
-  histoManager.CalcHyppGeomArray(A);
-  
-  G4double norm = 0; 
-  for(G4int i=0; i<100; i++){
-  HyppGeomArray[i] = histoManager.GetHyppGeomArray(i);
-  }
- 
-  for(G4int i=0; i<100; i++){
-  norm	+=HyppGeomArray[i];
-  }
- 
-  
-  for(G4int i=0; i<100; i++){
-  HyppGeomArray[i] *= 1./norm;
-  }
+  G4int A = 0;
+  G4int Z = 0;
+  G4int Ab = 0;
+  G4int Zb = 0;
 
-  
+  for(G4int iArray = 0; iArray < nucleons->GetEntries (); iArray++){
 
-    CLHEP::RandGeneral HyppGeom(new CLHEP::RanluxEngine,HyppGeomArray,100);
-   
-    G4int Z = G4int(HyppGeom.shoot()*100); 
-    while(Z>A){Z = G4int(HyppGeom.shoot()*100);}  
-  
+  TGlauNucleon *nucleon=(TGlauNucleon*)(nucleons->At(iArray));
+  if(nucleon->IsSpectator() && nucleon->IsInNucleusA()){A+=1;}
+  if(nucleon->IsSpectator() && nucleon->IsInNucleusA() && nucleon->IsProton()){Z+=1;} 
+  if(nucleon->IsSpectator() && nucleon->IsInNucleusB()){Ab+=1;}
+  if(nucleon->IsSpectator() && nucleon->IsInNucleusB() && nucleon->IsProton()){Zb+=1;} 
+  }
 
 
   G4double Ebound=40; //Maximum exitation energy per hole, MeV
@@ -415,30 +401,6 @@ G4double c0 = 1.3; // From Bondorf 1995
       TGlauNucleus *nucB   = mcg->GetNucleusB(); 
       G4int NpartB = mcg->GetNpartB();
       
-      
-      G4int Ab = nucB->GetN() - NpartB;
-
-  histoManager.CalcHyppGeomArrayB(Ab);
-  
-  G4double normB = 0; 
-  for(G4int i=0; i<100; i++){
-  HyppGeomArrayB[i] = histoManager.GetHyppGeomArrayB(i);
-  }
- 
-  for(G4int i=0; i<100; i++){
-  normB	+=HyppGeomArrayB[i];
-  }
- 
-  
-  for(G4int i=0; i<100; i++){
-  HyppGeomArrayB[i] *= 1./normB;
-  }
-
-   CLHEP::RandGeneral HyppGeomB(new CLHEP::RanluxEngine, HyppGeomArrayB,100);
-    
-   G4int Zb = G4int(HyppGeomB.shoot()*100); 
-   while(Zb>Ab){Zb = G4int(HyppGeomB.shoot()*100);}  
-
      //Excitation energy array for side B
       G4double ExcitationEnergyDistributionB[N];
      //Excitation energy level density array creation
