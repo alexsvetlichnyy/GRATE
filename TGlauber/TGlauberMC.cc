@@ -574,7 +574,9 @@ TObjArray *TGlauberMC::GetNucleons()
 Bool_t TGlauberMC::NextEvent(Double_t bgen)
 {
   if (bgen<0) 
+    //Place to switch impact parameter distribution
     bgen = TMath::Sqrt((fBmax*fBmax-fBmin*fBmin)*gRandom->Rndm()+fBmin*fBmin);
+    //bgen = (fBmax-fBmin)*gRandom->Rndm()+fBmin;
 
   fANucleus.ThrowNucleons(-bgen/2.);
   fBNucleus.ThrowNucleons(bgen/2.);

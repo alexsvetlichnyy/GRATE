@@ -131,8 +131,8 @@ void TGlauNucleus::Lookup(const char* name)
   else if (TString(name) == "He4")     {fN = 4;   fR = 0.00;       fA = 0.0000; fW =  0;       fF = 6;  fZ=2;} // read configurations from file
   else if (TString(name) == "C")       {fN = 12;  fR = 2.608;      fA = 0.513;  fW = -0.051;   fF = 15; fZ=6;} // Harmonic oscillator parameterization  
   else if (TString(name) == "Ofile")   {fN = 16;  fR = 2.608;      fA = 0.513;  fW = -0.051;   fF = 6;  fZ=8;} // read configurations from file
-  else if (TString(name) == "Opar")    {fN = 16;  fR = 2.608;      fA = 0.513;  fW = -0.051;   fF = 1;  fZ=8;} // WS parameterization
-  else if (TString(name) == "O")       {fN = 16;  fR = 1.833;      fA = 1.544;  fW =  0;       fF = 15; fZ=8;} // Harmonic oscillator parameterization
+  else if (TString(name) == "O")       {fN = 16;  fR = 2.608;      fA = 0.513;  fW = -0.051;   fF = 1;  fZ=8;} // WS parameterization
+  else if (TString(name) == "Oh")      {fN = 16;  fR = 1.833;      fA = 1.544;  fW =  0;       fF = 15; fZ=8;} // Harmonic oscillator parameterization
   else if (TString(name) == "Al")      {fN = 27;  fR = 3.34;       fA = 0.580;  fW = 0.0;      fF = 8;  fZ=13; fBeta2=-0.448; fBeta4=0.239;}
   else if (TString(name) == "Si")      {fN = 28;  fR = 3.34;       fA = 0.580;  fW = -0.233;   fF = 1;  fZ=14;}
   else if (TString(name) == "Si2")     {fN = 28;  fR = 3.34;       fA = 0.580;  fW =  0;       fF = 8;  fZ=14; fBeta2=-0.478; fBeta4=0.250;}

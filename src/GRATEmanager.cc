@@ -20,11 +20,13 @@ GRATEmanager::GRATEmanager()
   else if(SysA == "Pbpn"){sourceA = 208; sourceZ = 82;}
   else if(SysA == "Cu"){SysA+="2";sourceA = 64; sourceZ = 29;}
   else if(SysA == "O"){sourceA = 16; sourceZ = 8;}
+  else if(SysA = "Oh"){sourceA = 16; sourceZ = 8;}
   else if(SysA == "Au"){sourceA = 197; sourceZ = 79;}
   else if(SysA == "Xe"){sourceA = 129; sourceZ = 54;}
   else if(SysA == "C"){sourceA = 12; sourceZ = 6;}
   else if(SysA == "Al"){sourceA = 27; sourceZ = 13;}
   else if(SysA == "U"){sourceA = 238; sourceZ = 92;}
+  else if(SysA == "U2"){sourceA = 238; sourceZ = 92;}
   else{ std::cout <<"There is no matched nuclei in GRATE"<<std::endl;
 	std::cout <<"Program is going to stop"<<std::endl;
         throw std::exception();
@@ -37,11 +39,13 @@ GRATEmanager::GRATEmanager()
   else if(SysB == "Pbpn"){sourceAb = 208; sourceZb = 82;}
   else if(SysB == "Cu"){sourceAb = 64; sourceZb = 29;}
   else if(SysB == "O"){sourceAb = 16; sourceZb = 8;}
+  else if(SysB = "Oh"){sourceA = 16; sourceZ = 8;}
   else if(SysB == "Au"){sourceAb = 197; sourceZb = 79;}
   else if(SysB == "Xe"){sourceAb = 129; sourceZb = 54;}
   else if(SysB == "C"){sourceAb = 12; sourceZb = 6;}
   else if(SysB == "Al"){sourceAb = 27; sourceZb = 13;}
   else if(SysB == "U"){sourceAb = 238; sourceZb = 92;}
+  else if(SysB == "U2"){sourceAb = 238; sourceZb = 92;}
   else{ std::cout <<"There is no matched nucleus in GRATE"<<std::endl;
 	std::cout <<"Program is going to stop"<<std::endl;
         throw std::exception();
@@ -51,18 +55,6 @@ GRATEmanager::GRATEmanager()
   std::cout << "Please enter kinetic enegy of projectile nucleus (per nucleon in GeV) : ";
   std::cin >> KinEn;
   }
-
- /*
-  while ( (lowLimitExEn<0.) || (lowLimitExEn>100.) ) {
-  std::cout << "Please choose the low limit for the range of excitation energy (per nucleon in MeV) : from 0 to 100: ";
-  std::cin >> lowLimitExEn;
-  }
-
-  while ( (upperLimitExEn<0.) || (upperLimitExEn>100.) || (upperLimitExEn<lowLimitExEn) ) {
-  std::cout << "Please choose the upper limit for the range of excitation energy (per nucleon in MeV) : from 0 to 100: ";
-  std::cin >> upperLimitExEn;
-  }
-  */
 
   pZ = pow(KinEn*(KinEn+2*0.983),0.5)*GeV;
   KinEn*= sourceA*GeV;
