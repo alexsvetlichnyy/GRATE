@@ -13,14 +13,14 @@ GRATEmanager::GRATEmanager()
 {  
   std::cout << "######### Abrasion-Ablation model using Glauber Monte Carlo and Geant4" <<std::endl;
   
-  std::cout << "Please enter colliding nucleus name (side A). U, Pb, Pbpn(with neutron skin) Au, Xe, Al, Cu, O, C is available : ";
+  std::cout << "Please enter colliding nucleus name (side A). U, Pb, Pbpn(with neutron skin) Au, Xe, Al, Cu, O, Oh(Oxygen parametrized with HO), C is available : ";
   std::cin >> SysA;
 
   if(SysA =="Pb"){SysA+="*"; sourceA = 208; sourceZ = 82;}
   else if(SysA == "Pbpn"){sourceA = 208; sourceZ = 82;}
   else if(SysA == "Cu"){SysA+="2";sourceA = 64; sourceZ = 29;}
   else if(SysA == "O"){sourceA = 16; sourceZ = 8;}
-  else if(SysA = "Oh"){sourceA = 16; sourceZ = 8;}
+  else if(SysA == "Oh"){sourceA = 16; sourceZ = 8;}
   else if(SysA == "Au"){sourceA = 197; sourceZ = 79;}
   else if(SysA == "Xe"){sourceA = 129; sourceZ = 54;}
   else if(SysA == "C"){sourceA = 12; sourceZ = 6;}
@@ -32,14 +32,14 @@ GRATEmanager::GRATEmanager()
         throw std::exception();
       }
 
-  std::cout << "Please enter colliding nucleus name (side B). U, Pb, Pbpn(with neutron skin) Au, Xe, Al, Cu, O, C is available : ";
+  std::cout << "Please enter colliding nucleus name (side B). U, Pb, Pbpn(with neutron skin) Au, Xe, Al, Cu, O, Oh(Oxygen parametrized with HO), C is available : ";
   std::cin >> SysB;
  
   if(SysB == "Pb"){SysB+="*"; sourceAb = 208; sourceZb = 82;}
   else if(SysB == "Pbpn"){sourceAb = 208; sourceZb = 82;}
   else if(SysB == "Cu"){sourceAb = 64; sourceZb = 29;}
   else if(SysB == "O"){sourceAb = 16; sourceZb = 8;}
-  else if(SysB = "Oh"){sourceA = 16; sourceZ = 8;}
+  else if(SysB == "Oh"){sourceA = 16; sourceZ = 8;}
   else if(SysB == "Au"){sourceAb = 197; sourceZb = 79;}
   else if(SysB == "Xe"){sourceAb = 129; sourceZb = 54;}
   else if(SysB == "C"){sourceAb = 12; sourceZb = 6;}
