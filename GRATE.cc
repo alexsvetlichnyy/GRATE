@@ -98,14 +98,14 @@ int main()
   std::vector<G4float> MassOnSideB;
   std::vector<G4float> ChargeOnSideA;
   std::vector<G4float> ChargeOnSideB;
-  std::vector<G4float> pXonSideA;
-  std::vector<G4float> pYonSideA;
-  std::vector<G4float> pZonSideA;
-  std::vector<G4float> pXonSideB;
-  std::vector<G4float> pYonSideB;
-  std::vector<G4float> pZonSideB;
-  std::vector<G4float> pseudorapidity_A;
-  std::vector<G4float> pseudorapidity_B;
+  std::vector<G4double> pXonSideA;
+  std::vector<G4double> pYonSideA;
+  std::vector<G4double> pZonSideA;
+  std::vector<G4double> pXonSideB;
+  std::vector<G4double> pYonSideB;
+  std::vector<G4double> pZonSideB;
+  std::vector<G4double> pseudorapidity_A;
+  std::vector<G4double> pseudorapidity_B;
   G4float b;
   G4float ExEn;
   G4int id;
@@ -153,7 +153,7 @@ G4double c0 = 1.3; // From Bondorf 1995
   
 
   G4ExcitationHandler* handler = new G4ExcitationHandler;
-
+  //handler->SetMaxAForFermiBreakUp(0);
 //Setting up Glauber code
   histoManager.CalcXsectNN();
   G4float omega = -1;
@@ -301,7 +301,7 @@ G4double c0 = 1.3; // From Bondorf 1995
       G4int totBarNumber =0;
       G4int RestFragmentZ=Z;
       G4int RestFragmentA=A;
-      G4float eta_A = 0;
+      G4double eta_A = 0;
 	
 
       G4ReactionProductVector* theProduct = handler->BreakItUp(aFragment);
@@ -324,12 +324,12 @@ G4double c0 = 1.3; // From Bondorf 1995
 	  
 	 const G4ParticleDefinition* pd = (*iVector)->GetDefinition();
 
-	  G4String particleEmitted =  pd->GetParticleName();
+	  G4String particleEmitted = pd->GetParticleName();
 	  
-         if ( particleEmitted != "gamma" ) {
+         if ( particleEmitted != "gamma" && particleEmitted != "e-") {
 	     thisFragmentZ = pd->GetAtomicNumber();
-
              thisFragmentA = pd->GetAtomicMass(); 
+	     if(pd->GetAtomicMass() == 0){G4cout<<"ERROR, pn = "<<pd->GetParticleName()<<G4endl;}
 	     MassOnSideA.push_back(thisFragmentA);
              ChargeOnSideA.push_back(thisFragmentZ);
 	 
@@ -338,7 +338,7 @@ G4double c0 = 1.3; // From Bondorf 1995
 	     G4double pXonA = product_p4.x()/MeV;
 	     G4double pYonA = product_p4.y()/MeV;			
 	     G4double pZonA = product_p4.z()/MeV;
-	     p4 += -product_p4;
+	     p4 = p4-product_p4;
 	     
 	     eta_A = 0.5*log((std::sqrt(pXonA*pXonA+pYonA*pYonA+pZonA*pZonA) + pZonA)/(std::sqrt(pXonA*pXonA+pYonA*pYonA+pZonA*pZonA) -pZonA));
 
@@ -369,6 +369,7 @@ G4double c0 = 1.3; // From Bondorf 1995
 	  histoManager.GetHisto2(2)->Fill(thisFragmentZ,thisFragmentA);
           delete (*iVector);
         }
+	  if( RestFragmentA != 0){
 	  eta_A= 0.5*log((std::sqrt(p4.x()*p4.x()+p4.y()*p4.y()+p4.z()*p4.z())+p4.z())/(std::sqrt(p4.x()*p4.x()+p4.y()*p4.y()+p4.z()*p4.z()) - p4.z()));
 	  MassOnSideA.push_back(RestFragmentA);
 	  ChargeOnSideA.push_back(RestFragmentZ);
@@ -376,7 +377,7 @@ G4double c0 = 1.3; // From Bondorf 1995
           pYonSideA.push_back(p4.y());
           pZonSideA.push_back(p4.z());
 	  pseudorapidity_A.push_back(eta_A);
-	
+	  }
 	  
 		if(RestFragmentZ == 0){histoManager.GetHisto2(3)->Fill(p4.x(),p4.y());
 					      histoManager.GetHisto(2)->Fill(p4.x());}
@@ -467,7 +468,7 @@ G4double c0 = 1.3; // From Bondorf 1995
 	  
 	 G4String particleEmittedB = pdB->GetParticleName();
 	  
-         if ( particleEmittedB != "gamma" ) {
+         if ( particleEmittedB != "gamma" && particleEmittedB != "e-") {
 	     thisFragmentZb = pdB->GetAtomicNumber();
              thisFragmentAb = pdB->GetAtomicMass(); 
 	     MassOnSideB.push_back(thisFragmentAb);         
@@ -478,7 +479,7 @@ G4double c0 = 1.3; // From Bondorf 1995
 	     G4double pXonB = product_p4b.x()/MeV;
 	     G4double pYonB = product_p4b.y()/MeV;			
 	     G4double pZonB = product_p4b.z()/MeV;
-	     p4b+= -product_p4b;
+	     p4b = p4b -product_p4b;
 	 
 	     eta_B = 0.5*log((std::sqrt(pXonB*pXonB+pYonB*pYonB+pZonB*pZonB) + pZonB)/(std::sqrt(pXonB*pXonB+pYonB*pYonB+pZonB*pZonB) -pZonB));
              pXonSideB.push_back(pXonB); 
@@ -497,6 +498,8 @@ G4double c0 = 1.3; // From Bondorf 1995
 
           delete (*kVector);
         }
+	  
+	  if( RestFragmentA != 0){
 	  eta_B= 0.5*log((std::sqrt(p4b.x()*p4b.x()+p4b.y()*p4b.y()+p4b.z()*p4b.z())+p4b.z())/(std::sqrt(p4b.x()*p4b.x()+p4b.y()*p4b.y()+p4b.z()*p4b.z()) - p4b.z()));
 	  MassOnSideB.push_back(RestFragmentAb);
 	  ChargeOnSideB.push_back(RestFragmentZb);
@@ -510,7 +513,7 @@ G4double c0 = 1.3; // From Bondorf 1995
 	  pseudorapidity_B.push_back(eta_B);  
           //histoManager.GetHisto(7)->Fill(RestFragmentAb);
 	  //histoManager.GetHisto2(2)->Fill(RestFragmentZb,RestFragmentAb);
-          
+          }
       delete theProductB;      
  //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
