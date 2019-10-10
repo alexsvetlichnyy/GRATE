@@ -139,10 +139,10 @@ void GRATEmanager::BookHisto()
  
  histo2[2] = new TH2D("Mass and Charge distribution"," ;Z;A",sourceZ+1, -0.5, sourceZ+0.5, sourceA+1, -0.5, sourceA+0.5);
 
- histo2[3] = new TH2D("px vs pz for neutrons", ";px;py", 100,-200,200,100,-200,200);
- histo2[4] = new TH2D("px vs pz for protons", ";px;py", 100,-200,200,100,-200,200);
- histo2[5] = new TH2D("px vs pz for IMF", ";px;py", 100,-200,200,100,-200,200);
- histo2[6] = new TH2D("px vs pz for heavy fragments", ";px;py", 100,-200,200,100,-200,200);
+ histo2[3] = new TH2D("px vs py for neutrons", ";px;py", 100,-200,200,100,-200,200);
+ histo2[4] = new TH2D("px vs py for protons", ";px;py", 100,-200,200,100,-200,200);
+ histo2[5] = new TH2D("px vs py for IMF", ";px;py", 100,-200,200,100,-200,200);
+ histo2[6] = new TH2D("px vs py for heavy fragments", ";px;py", 100,-200,200,100,-200,200);
  
 }
 

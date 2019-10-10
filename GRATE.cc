@@ -147,7 +147,7 @@ if(histoManager.WriteMomentum()){
 G4double e_0=8*MeV;//MeV     
 G4double sigma0 = 0.2;//should fit our results
 G4double c0 = 1.3; // From Bondorf 1995
-	   
+G4double GoldhaberDev0 = 150*MeV; //Model parameter
 //Starting of modeling
 //###########################################################################################s#######################################
   
@@ -279,15 +279,14 @@ G4double c0 = 1.3; // From Bondorf 1995
 	}
 
     //G4double GoldhaberDev0 = energy/G4double(A)*938*MeV;
-    G4double GoldhaberDev0 = 90*MeV;
     G4double GoldhaberDev = GoldhaberDev0*pow(G4double(A*NpartA)/G4double(sourceA-1), 0.5);
-    CLHEP::RandGauss   randGoldhaber(0,GoldhaberDev);
+    CLHEP::RandGauss   randGoldhaber(new CLHEP::RanluxEngine, 0, GoldhaberDev);
     CLHEP::RandFlat    randFlat(new CLHEP::RanluxEngine);
 
     histoManager.GetHisto2(1)->Fill(energy/G4double(A), G4double(A)/G4double(sourceA));
     ExEn = energy/G4double(A);
     
-  G4double p = randGoldhaber.shoot();
+  G4double p = randGauss.shoot()*GoldhaberDev;
   G4double theta = randFlat.shoot(1)*2*3.141592;
   G4double px = p*sin(theta);
   G4double py = p*cos(theta);
