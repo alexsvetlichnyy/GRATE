@@ -147,7 +147,7 @@ if(histoManager.WriteMomentum()){
 G4double e_0=8*MeV;//MeV     
 G4double sigma0 = 0.2;//should fit our results
 G4double c0 = 1.3; // From Bondorf 1995
-G4double GoldhaberDev0 = 150*MeV; //Model parameter
+G4double GoldhaberDev0 = 90*MeV; //Model parameter
 //Starting of modeling
 //###########################################################################################s#######################################
   
