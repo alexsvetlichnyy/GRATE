@@ -77,7 +77,8 @@ class GRATEmanager
     G4int sourceZb;
     G4int sourceAb;
     G4int iterations; 
-    G4int StatisticsLabel;   
+    G4int StatisticsLabel;  
+    G4bool NucleusInputLabel; 
 
     G4String fileName;
     G4String fileType;

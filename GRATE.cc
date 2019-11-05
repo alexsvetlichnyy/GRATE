@@ -5,7 +5,6 @@
 #include "G4RunManager.hh"
 #include "G4StateManager.hh"
 
-#include "G4NeutronInelasticCrossSection.hh"
 #include "G4ParticleTypes.hh"
 #include "G4ParticleTable.hh"
 #include "G4BosonConstructor.hh"
@@ -19,7 +18,9 @@
 #include "G4ReactionProduct.hh"
 #include "G4ExcitationHandler.hh"
 #include "G4NucleiProperties.hh"
+#include "G4Evaporation.hh"
 #include "GRATEmanager.hh"
+#include "GRATEPhysicsList.hh"
 #include "TGlauber/TGlauberMC.hh"
 #include "TGlauber/TGlauNucleon.hh"
 #include "TGlauber/TGlauNucleus.hh"
@@ -33,8 +34,8 @@
 
 #include "G4UImanager.hh"
 #include "G4IonTable.hh"
+#include "G4GenericIon.hh"
 #include "G4Ions.hh"
-#include "G4IonConstructor.hh"
 #include "G4DeexPrecoParameters.hh"
 #include "G4NuclearLevelData.hh"
 
@@ -60,7 +61,7 @@ int main()
   CLHEP::HepRandom::setTheEngine(new CLHEP::RanluxEngine);
 
   G4RunManager * runManager = new G4RunManager;
-
+  runManager->SetUserInitialization(new GRATEPhysicsList);
   G4BosonConstructor pCBos;
   pCBos.ConstructParticle();
  
@@ -76,14 +77,22 @@ int main()
   G4IonConstructor pCIon;
   pCIon.ConstructParticle();
 
+  G4GenericIon* gion = G4GenericIon::GenericIon();
+  gion->SetProcessManager(new G4ProcessManager(gion));
 
   G4StateManager::GetStateManager()->SetNewState(G4State_Init); // To let create ions
-
   G4ParticleTable* partTable = G4ParticleTable::GetParticleTable();
+  G4IonTable* ions = partTable->GetIonTable();
   partTable->SetReadiness();
+  ions->CreateAllIon();
+  ions->CreateAllIsomer();
+
+  //Definition of decay processes 
+  G4Evaporation * theEvaporation   = new G4Evaporation();	
+;
 
   
-  //Defenition of level density functions
+  //Definition of level density functions
   
   G4double GaimardSchmidt(G4double, G4double, G4int ,G4int);
 
@@ -150,10 +159,11 @@ G4double c0 = 1.3; // From Bondorf 1995
 G4double GoldhaberDev0 = 90*MeV; //Model parameter
 //Starting of modeling
 //###########################################################################################s#######################################
-  
-
-  G4ExcitationHandler* handler = new G4ExcitationHandler;
-  //handler->SetMaxAForFermiBreakUp(0);
+//Setting up ExcitationHandler
+  G4ExcitationHandler* handler = new G4ExcitationHandler();
+  handler->SetEvaporation(theEvaporation);
+  handler->SetMinEForMultiFrag(3*MeV);
+  handler->SetMaxAandZForFermiBreakUp(12, 6); 
 //Setting up Glauber code
   histoManager.CalcXsectNN();
   G4float omega = -1;
@@ -272,9 +282,8 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 		}
 	default:
 		{
-		G4cout<<"Error: ExEn statistic index is invalid."<<G4endl;
-		throw std::exception();
-		break;	
+		G4Exception("Statistics label", "GRATE-1", FatalException, "Statistics label is invalid");
+	  	break;	
 		}
 	}
 
@@ -298,8 +307,8 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
                                                           
       G4int totCharge = 0;
       G4int totBarNumber =0;
-      G4int RestFragmentZ=Z;
-      G4int RestFragmentA=A;
+     // G4int RestFragmentZ=Z;
+     // G4int RestFragmentA=A;
       G4double eta_A = 0;
 	
 
@@ -325,6 +334,7 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 
 	  G4String particleEmitted = pd->GetParticleName();
 	  
+	 //maif(particleEmitted == "e-"){RestFragmentZ += 1;}
          if ( particleEmitted != "gamma" && particleEmitted != "e-") {
 	     thisFragmentZ = pd->GetAtomicNumber();
              thisFragmentA = pd->GetAtomicMass(); 
@@ -360,15 +370,15 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 			    histoManager.GetHisto(5)->Fill(pZonA);} 
 	 }
          
-	 RestFragmentZ=RestFragmentZ-thisFragmentZ;
-	 RestFragmentA=RestFragmentA-thisFragmentA;
+	// RestFragmentZ=RestFragmentZ-thisFragmentZ;
+	 //RestFragmentA=RestFragmentA-thisFragmentA;
 	 
     	  histoManager.GetHisto(6)->Fill(thisFragmentZ);
           histoManager.GetHisto(7)->Fill(thisFragmentA);
 	  histoManager.GetHisto2(2)->Fill(thisFragmentZ,thisFragmentA);
           delete (*iVector);
         }
-	  if( RestFragmentA != 0){
+	  /*if( RestFragmentA != 0){
 	  eta_A= 0.5*log((std::sqrt(p4.x()*p4.x()+p4.y()*p4.y()+p4.z()*p4.z())+p4.z())/(std::sqrt(p4.x()*p4.x()+p4.y()*p4.y()+p4.z()*p4.z()) - p4.z()));
 	  MassOnSideA.push_back(RestFragmentA);
 	  ChargeOnSideA.push_back(RestFragmentZ);
@@ -378,7 +388,7 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 	  pseudorapidity_A.push_back(eta_A);
 	  }
 	  
-		if(RestFragmentZ == 0){histoManager.GetHisto2(3)->Fill(p4.x(),p4.y());
+		if(RestFragmentZ == 0 && RestFragmentA == 1){histoManager.GetHisto2(3)->Fill(p4.x(),p4.y());
 					      histoManager.GetHisto(2)->Fill(p4.x());}
 
 		else if(RestFragmentZ == 1 && RestFragmentA == 1 ){histoManager.GetHisto2(4)->Fill(p4.x(),p4.y()); 
@@ -394,7 +404,7 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 	  histoManager.GetHisto(6)->Fill(RestFragmentZ);
           histoManager.GetHisto(7)->Fill(RestFragmentA);
 	  histoManager.GetHisto2(2)->Fill(RestFragmentZ,RestFragmentA);
-          
+          */
       delete theProduct;
 
 //$$$$$$$$$$$$$$$//Side B//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -404,7 +414,8 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
      //Excitation energy array for side B
       G4double ExcitationEnergyDistributionB[N];
      //Excitation energy level density array creation
-	if(histoManager.GetStatType()<1.5){
+	/*
+      if(histoManager.GetStatType()<1.5){
 	   for(G4int n=0; n<N; n++){
 	     G4double s=Ericson(G4double(n)*((histoManager.GetUpEnB()-histoManager.GetLowEnB())/G4double(N)), Ebound, Ab, sourceAb )*(histoManager.GetUpEnB()-histoManager.GetLowEnB())/N;
 	     ExcitationEnergyDistributionB[n]=s;
@@ -415,10 +426,39 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 	     ExcitationEnergyDistributionB[n]=GaimardSchmidt(G4double(n)*((histoManager.GetUpEnB()-histoManager.GetLowEnB())/G4double(N)), Ebound, Ab, sourceAb )*(histoManager.GetUpEnB()-histoManager.GetLowEnB())/N;
 	   }
 	}
-	
+	*/
+
+switch(histoManager.GetStatType())
+	{
+	case 1:
+		{
+		for(G4int n=0; n<N; n++){
+    		G4double s=Ericson(G4double(n)*((histoManager.GetUpEnB()-histoManager.GetLowEnB())/G4double(N)), Ebound, Ab, sourceAb )*(histoManager.GetUpEnB()-histoManager.GetLowEnB())/N;
+     		ExcitationEnergyDistributionB[n]=s;
+					}
+		break;
+ 		}
+	case 2:
+		{
+		 for(G4int n=0; n<N; n++){
+     		ExcitationEnergyDistributionB[n]=GaimardSchmidt(G4double(n)*((histoManager.GetUpEnB()-histoManager.GetLowEnB())/G4double(N)), Ebound, Ab, sourceAb )*(histoManager.GetUpEnB()-histoManager.GetLowEnB())/N;
+ 					  }
+		break;
+		}
+	default:
+		{
+		for(G4int n=0; n<N; n++){
+    		G4double s=Ericson(G4double(n)*((histoManager.GetUpEnB()-histoManager.GetLowEnB())/G4double(N)), Ebound, Ab, sourceAb )*(histoManager.GetUpEnB()-histoManager.GetLowEnB())/N;
+     		ExcitationEnergyDistributionB[n]=s;
+					}	
+		break;
+		}
+	}
+
+
          CLHEP::RandGeneral randGeneralB(ExcitationEnergyDistributionB,N);
          G4double energyB = 0;
-	    
+	   /* 
 	    if(histoManager.GetStatType()<2.5){
 	    //Gaimard-Schmidt and Ericson distributions
 	       energyB = randGeneralB.shoot()*(histoManager.GetUpEnB()-histoManager.GetLowEnB())+histoManager.GetLowEnB();
@@ -434,7 +474,41 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 	     		alpha1B = alphaB + sigma1B;
 	     		energyB = e_0*Ab*pow(1-alpha1B ,0.5);
 		}
-	    }	
+	    }*/	
+
+    switch(histoManager.GetStatType())
+    	{
+	case 1:
+		{//Ericson distribution
+		energyB = randGeneralB.shoot()*(histoManager.GetUpEnB()-histoManager.GetLowEnB())+histoManager.GetLowEnB();
+		break;
+		}
+	case 2:
+		{//Gaimard-Schmidt distributions
+     		energyB = randGeneralB.shoot()*(histoManager.GetUpEnB()-histoManager.GetLowEnB())+histoManager.GetLowEnB();
+      		break;
+		}
+	case 3: 
+		{//ALADIN parametrisation
+		 G4double alphaB = G4double(Ab)/G4double(sourceAb);
+		 G4double sigma1B = randGauss.shoot()*sigma0*(1+c0*(1-alphaB));
+		 G4double alpha1B = alphaB + sigma1B;
+		 energyB = e_0*Ab*pow(1-alpha1B ,0.5);
+		 while(energyB!=energyB){
+		     		sigma1B = randGauss.shoot()*sigma0*(1+c0*(1-alphaB));
+		     		alpha1B = alphaB + sigma1B;
+		     		energyB = e_0*Ab*pow(1-alpha1B ,0.5);
+				}
+		break;
+		}
+	default:
+		{
+		G4Exception("Statistics label", "GRATE-1", FatalException, "Statistics label is invalid");
+	  	break;	
+		}
+	}
+
+
 
 	histoManager.GetHisto2(1)->Fill(energyB/G4double(Ab), G4double(Ab)/G4double(sourceAb));
     	
@@ -451,8 +525,8 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
   G4double beta_y = std::sqrt(pow(pyB/NuclearMassB,2)/(1+pow(pyB/NuclearMassB,2)));
   G4double beta_x = std::sqrt(pow(pxB/NuclearMassB,2)/(1+pow(pxB/NuclearMassB,2)));
                                
-      G4int RestFragmentZb=Zb;
-      G4int RestFragmentAb=Ab;
+      //G4int RestFragmentZb=Zb;
+      //G4int RestFragmentAb=Ab;
       G4float eta_B=0;
         
 
@@ -467,6 +541,7 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 	  
 	 G4String particleEmittedB = pdB->GetParticleName();
 	  
+	 //if(particleEmittedB == "e-"){RestFragmentZb += 1;}
          if ( particleEmittedB != "gamma" && particleEmittedB != "e-") {
 	     thisFragmentZb = pdB->GetAtomicNumber();
              thisFragmentAb = pdB->GetAtomicMass(); 
@@ -487,8 +562,8 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 	     pseudorapidity_B.push_back(eta_B);   
           }	
          
-	 RestFragmentZb=RestFragmentZb-thisFragmentZb;
-	 RestFragmentAb=RestFragmentAb-thisFragmentAb;
+	// RestFragmentZb=RestFragmentZb-thisFragmentZb;
+	// RestFragmentAb=RestFragmentAb-thisFragmentAb;
 	  
     	  histoManager.GetHisto(0)->Fill(thisFragmentZb);
           //if(thisEventNumFragments > 3){histoManager.GetHisto(8)->Fill(thisFragmentZb);}
@@ -497,7 +572,7 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 
           delete (*kVector);
         }
-	  
+	  /*
 	  if( RestFragmentA != 0){
 	  eta_B= 0.5*log((std::sqrt(p4b.x()*p4b.x()+p4b.y()*p4b.y()+p4b.z()*p4b.z())+p4b.z())/(std::sqrt(p4b.x()*p4b.x()+p4b.y()*p4b.y()+p4b.z()*p4b.z()) - p4b.z()));
 	  MassOnSideB.push_back(RestFragmentAb);
@@ -512,7 +587,7 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 	  pseudorapidity_B.push_back(eta_B);  
           //histoManager.GetHisto(7)->Fill(RestFragmentAb);
 	  //histoManager.GetHisto2(2)->Fill(RestFragmentZb,RestFragmentAb);
-          }
+          }*/
       delete theProductB;      
  //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
