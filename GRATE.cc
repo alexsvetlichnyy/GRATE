@@ -143,6 +143,8 @@ if(histoManager.WriteMomentum()){
   histoManager.GetTree()->Branch("impact_parameter", &b, "impact_parameter/f");
   histoManager.GetTree()->Branch("Ex_En_per_nucleon", &ExEn, "Ex_En_per_nucleon/f");
   
+
+  G4bool Verbose = 0;
  
   //Get Z and A of nucleis
   G4int sourceA = histoManager.GetSourceA();
@@ -156,6 +158,7 @@ if(histoManager.WriteMomentum()){
 G4double e_0=8*MeV;//MeV     
 G4double sigma0 = 0.2;//should fit our results
 G4double c0 = 1.3; // From Bondorf 1995
+//Goldhaber model parameter 
 G4double GoldhaberDev0 = 90*MeV; //Model parameter
 //Starting of modeling
 //###########################################################################################s#######################################
@@ -188,24 +191,33 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 
   //Side A$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
   TGlauNucleus *nucA   = mcg->GetNucleusA(); 
-  G4int NpartA = mcg->GetNpartA();
+  G4int NpartA = mcg->GetNpartA(); 
+  G4int NpartB = mcg->GetNpartB();
   b = mcg->GetB();
+
   TObjArray* nucleons=mcg->GetNucleons();
 
   G4int A = 0;
   G4int Z = 0;
   G4int Ab = 0;
   G4int Zb = 0;
+  G4int totBarNumA = 0;
+  G4int totChargeNumA = 0;
+  G4int totBarNumB = 0;
+  G4int totChargeNumB = 0;
 
   for(G4int iArray = 0; iArray < nucleons->GetEntries (); iArray++){
 
   TGlauNucleon *nucleon=(TGlauNucleon*)(nucleons->At(iArray));
   if(nucleon->IsSpectator() && nucleon->IsInNucleusA()){A+=1;}
   if(nucleon->IsSpectator() && nucleon->IsInNucleusA() && nucleon->IsProton()){Z+=1;} 
+  if(nucleon->IsWounded()   && nucleon->IsInNucleusA() && nucleon->IsProton()){totChargeNumA+=1;} 
   if(nucleon->IsSpectator() && nucleon->IsInNucleusB()){Ab+=1;}
-  if(nucleon->IsSpectator() && nucleon->IsInNucleusB() && nucleon->IsProton()){Zb+=1;} 
+  if(nucleon->IsSpectator() && nucleon->IsInNucleusB() && nucleon->IsProton()){Zb+=1;}
+  if(nucleon->IsWounded()   && nucleon->IsInNucleusB() && nucleon->IsProton()){totChargeNumB+=1;} 
   }
-
+  totBarNumA +=NpartA;
+  totBarNumB +=NpartB;
 
   G4double Ebound=40; //Maximum exitation energy per hole, MeV
   
@@ -318,10 +330,10 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 
       histoManager.GetHisto(1)->Fill(thisEventNumFragments);
 
-
+      if(Verbose){
       std::cout << "### event  at " << energy/A << " MeV/nucleon" 
       << " with "<< thisEventNumFragments <<" particles  #####\n";
-
+      }
       totalNumFragments += thisEventNumFragments;
        
       
@@ -376,6 +388,8 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
     	  histoManager.GetHisto(6)->Fill(thisFragmentZ);
           histoManager.GetHisto(7)->Fill(thisFragmentA);
 	  histoManager.GetHisto2(2)->Fill(thisFragmentZ,thisFragmentA);
+	  totBarNumA +=thisFragmentA;
+	  totChargeNumA +=thisFragmentZ;
           delete (*iVector);
         }
 	  /*if( RestFragmentA != 0){
@@ -405,11 +419,14 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
           histoManager.GetHisto(7)->Fill(RestFragmentA);
 	  histoManager.GetHisto2(2)->Fill(RestFragmentZ,RestFragmentA);
           */
+
+	if(totBarNumA - sourceA){G4cout<<"Total baryonic number "<<totBarNumA<<" is not equal to initial "<<sourceA<<G4endl;}
+	if(totChargeNumA - histoManager.GetSourceZ()){G4cout<<"Total charge number "<<totChargeNumA<<" is not equal to initial "<<histoManager.GetSourceZ()<<G4endl;}
+     
       delete theProduct;
 
 //$$$$$$$$$$$$$$$//Side B//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
       TGlauNucleus *nucB   = mcg->GetNucleusB(); 
-      G4int NpartB = mcg->GetNpartB();
       
      //Excitation energy array for side B
       G4double ExcitationEnergyDistributionB[N];
@@ -559,7 +576,11 @@ switch(histoManager.GetStatType())
              pXonSideB.push_back(pXonB); 
              pYonSideB.push_back(pYonB);
              pZonSideB.push_back(pZonB);
-	     pseudorapidity_B.push_back(eta_B);   
+	     pseudorapidity_B.push_back(eta_B);  
+	     
+             totBarNumB +=thisFragmentAb;
+	     totChargeNumB +=thisFragmentZb;
+          
           }	
          
 	// RestFragmentZb=RestFragmentZb-thisFragmentZb;
@@ -569,6 +590,7 @@ switch(histoManager.GetStatType())
           //if(thisEventNumFragments > 3){histoManager.GetHisto(8)->Fill(thisFragmentZb);}
           //histoManager.GetHisto(7)->Fill(thisFragmentAb);
 	  //histoManager.GetHisto2(2)->Fill(thisFragmentZb,thisFragmentAb);
+
 
           delete (*kVector);
         }
@@ -588,6 +610,10 @@ switch(histoManager.GetStatType())
           //histoManager.GetHisto(7)->Fill(RestFragmentAb);
 	  //histoManager.GetHisto2(2)->Fill(RestFragmentZb,RestFragmentAb);
           }*/
+	if(totBarNumB - sourceAb){G4cout<<"Total baryonic number "<<totBarNumB<<" is not equal to initial "<<sourceAb<<G4endl;}
+	if(totChargeNumB - histoManager.GetSourceZb()){G4cout<<"Total charge number "<<totChargeNumB<<" is not equal to initial "<<histoManager.GetSourceZb()<<G4endl;}
+     
+
       delete theProductB;      
  //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
@@ -604,6 +630,8 @@ switch(histoManager.GetStatType())
   pZonSideB.clear();
   pseudorapidity_A.clear();
   pseudorapidity_B.clear();  
+
+  if(!G4bool(count%1000)){G4cout<<"Program is working"<<G4endl;}
           
   }
 G4cout<<"----> collided "<<histoManager.GetIterations()<<" nuclei "<<histoManager.GetSysA()<< " with " << histoManager.GetSysB() <<" at N-N x-section "<<signn<<" mb"<<G4endl;   
