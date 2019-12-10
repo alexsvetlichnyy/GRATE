@@ -79,7 +79,7 @@ while(!NucleusInputLabel){
   upperLimitExEnB *=sourceAb;
   upperLimitExEnB *=MeV;
 
- while ( (StatisticsLabel<0) || (StatisticsLabel>3) || (upperLimitExEn<lowLimitExEn) ) {
+ while ( (StatisticsLabel<0) || (StatisticsLabel>4) || (upperLimitExEn<lowLimitExEn) ) {
   std::cout << "Please choose the level density function to be used: 1 - Ericson, 2 - Gaimard-Schmidt, 3 - ALADIN parametrization : ";
   std::cin >> StatisticsLabel;
   }

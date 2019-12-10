@@ -18,6 +18,7 @@
 #include <TNtuple.h>
 #include <TObjArray.h>
 #include <TRandom.h>
+#include <TRandom1.h>
 #include <TRotation.h>
 #include <TString.h>
 #include <TSystem.h>
@@ -132,7 +133,7 @@ class TGlauberMC : public TNamed
     Bool_t        CalcEvent(Double_t bgen);
 
   public:
-    TGlauberMC(const char* NA = "Pb", const char* NB = "Pb", Double_t xsect = 42, Double_t xsectsigma=0);
+    TGlauberMC(const char* NA = "Pb", const char* NB = "Pb", Double_t xsect = 42, Double_t xsectsigma=0, ULong_t seed = 65539);
   virtual            ~TGlauberMC() {delete fNt; fNt=0;}
 
     Double_t            CalcDens(TF1 &prof, Double_t xval, Double_t yval) const;

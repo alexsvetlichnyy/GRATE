@@ -82,7 +82,7 @@ TF1 *getNNProf(Double_t snn, Double_t omega, Double_t G)
   //ClassImp(TGlauberMC::Event)
 //---------------------------------------------------------------------------------
 
-TGlauberMC::TGlauberMC(const char* NA, const char* NB, Double_t xsect, Double_t xsectsigma) :
+TGlauberMC::TGlauberMC(const char* NA, const char* NB, Double_t xsect, Double_t xsectsigma, ULong_t seed) :
   fANucleus(NA),fBNucleus(NB),
   fXSect(xsect),fXSectOmega(0),fXSectLambda(0),fXSectEvent(0),
   fNucleonsA(0),fNucleonsB(0),fNucleons(0),
@@ -92,6 +92,8 @@ TGlauberMC::TGlauberMC(const char* NA, const char* NB, Double_t xsect, Double_t 
   fMaxNpartFound(0),f2Cx(0),fPTot(0),fNNProf(0),
   fEv()
 {
+  gRandom = new TRandom1(seed, 3);
+  //gRandom->SetSeed(seed);
   if (xsectsigma>0) {
     fXSectOmega = xsectsigma;
     fXSectLambda = 1;

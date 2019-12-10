@@ -156,8 +156,10 @@ if(histoManager.WriteMomentum()){
 
 //Parameters for ALADIN parametrizations
 G4double e_0=8*MeV;//MeV     
-G4double sigma0 = 0.2;//should fit our results
-G4double c0 = 1.3; // From Bondorf 1995
+G4double sigma0 = 0.07	;//should fit our results
+G4double c0 = 2; // From Bondorf 1995
+G4double sigmaE0 = 1*MeV;
+G4double b0 = 0.1;
 //Goldhaber model parameter 
 G4double GoldhaberDev0 = 90*MeV; //Model parameter
 //Starting of modeling
@@ -171,9 +173,10 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
   histoManager.CalcXsectNN();
   G4float omega = -1;
   G4float signn = histoManager.GetXsectNN();  
+  const unsigned long int seed = static_cast<unsigned long int>(*CLHEP::HepRandom::getTheSeeds()); //setting the same seed to TGlauber
 
 
-  TGlauberMC *mcg=new TGlauberMC(histoManager.GetSysA(),histoManager.GetSysB(),signn,omega);
+  TGlauberMC *mcg=new TGlauberMC(histoManager.GetSysA(),histoManager.GetSysB(),signn,omega,seed);
   mcg->SetMinDistance(0);
   mcg->SetNodeDistance(0);
   mcg->SetCalcLength(0);
@@ -264,7 +267,8 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
   //Excitation energy computing
     CLHEP::RandGeneral randGeneral(ExcitationEnergyDistribution,N);
     CLHEP::RandGauss   randGauss(0,1);
-	      
+    CLHEP::RandFlat    randFlat(new CLHEP::RanluxEngine);
+      
     G4double energy = 0;
   
     switch(histoManager.GetStatType())
@@ -284,12 +288,19 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 		 G4double alpha = G4double(A)/G4double(sourceA);
 		 G4double sigma1 = randGauss.shoot()*sigma0*(1+c0*(1-alpha));
 		 G4double alpha1 = alpha + sigma1;
-		 energy = e_0*A*pow(1-alpha1 ,0.5);
+		 G4double sigmaE = randGauss.shoot()*sigmaE0*(1+b0*(1-alpha));
+		 energy = e_0*A*pow(1-alpha ,0.5)+A*sigmaE;
 		 while(energy!=energy){
-		     		sigma1 = randGauss.shoot()*sigma0*(1+c0*(1-alpha));
+		     		sigma1 = randGauss.shoot()*sigma0*(1+c0*(1-alpha));	
+ 				sigmaE = randGauss.shoot()*sigmaE0*(1+b0*(1-alpha));
 		     		alpha1 = alpha + sigma1;
-		     		energy = e_0*A*pow(1-alpha1 ,0.5);
+		     		energy = e_0*A*pow(1-alpha ,0.5)+A*sigmaE;
 				}
+		break;
+		}
+	case 4:
+		{
+		energy = 50*G4double(sourceA)*randFlat.shoot();
 		break;
 		}
 	default:
@@ -302,8 +313,7 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
     //G4double GoldhaberDev0 = energy/G4double(A)*938*MeV;
     G4double GoldhaberDev = GoldhaberDev0*pow(G4double(A*NpartA)/G4double(sourceA-1), 0.5);
     CLHEP::RandGauss   randGoldhaber(new CLHEP::RanluxEngine, 0, GoldhaberDev);
-    CLHEP::RandFlat    randFlat(new CLHEP::RanluxEngine);
-
+   
     histoManager.GetHisto2(1)->Fill(energy/G4double(A), G4double(A)/G4double(sourceA));
     ExEn = energy/G4double(A);
     
@@ -510,12 +520,18 @@ switch(histoManager.GetStatType())
 		 G4double alphaB = G4double(Ab)/G4double(sourceAb);
 		 G4double sigma1B = randGauss.shoot()*sigma0*(1+c0*(1-alphaB));
 		 G4double alpha1B = alphaB + sigma1B;
-		 energyB = e_0*Ab*pow(1-alpha1B ,0.5);
+		 G4double sigmaEB = randGauss.shoot()*sigmaE0*(1+b0*(1-alphaB));
+		 energyB = e_0*Ab*pow(1-alphaB ,0.5)+Ab*sigmaEB;
 		 while(energyB!=energyB){
 		     		sigma1B = randGauss.shoot()*sigma0*(1+c0*(1-alphaB));
 		     		alpha1B = alphaB + sigma1B;
-		     		energyB = e_0*Ab*pow(1-alpha1B ,0.5);
+		     		energyB = e_0*Ab*pow(1-alphaB ,0.5)+Ab*sigmaEB;
 				}
+		break;
+		}
+	case 4:
+		{
+		energyB = 50*G4double(sourceAb)*randFlat.shoot();
 		break;
 		}
 	default:
@@ -527,7 +543,7 @@ switch(histoManager.GetStatType())
 
 
 
-	histoManager.GetHisto2(1)->Fill(energyB/G4double(Ab), G4double(Ab)/G4double(sourceAb));
+	//histoManager.GetHisto2(1)->Fill(energyB/G4double(Ab), G4double(Ab)/G4double(sourceAb));
     	
 	
   G4double pxB = -px;
