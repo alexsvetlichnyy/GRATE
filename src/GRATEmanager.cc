@@ -112,7 +112,6 @@ while(!NucleusInputLabel){
 
 GRATEmanager::~GRATEmanager()
 {
-  
 }
 
 void GRATEmanager::BookHisto()
@@ -120,7 +119,7 @@ void GRATEmanager::BookHisto()
 
 // Open a file to keep histograms inside it 
 
- if ( fileName == "") fileName = "GRATE_"+SysA+SysB+"_"+std::to_string(KinEn/GeV)+"_GeV_"+std::to_string(iterations)+"_events";
+ if ( fileName.empty()) fileName = "GRATE_"+SysA+SysB+"_"+std::to_string(KinEn/GeV)+"_GeV_"+std::to_string(iterations)+"_events";
  fileType = "root";
  fileFullName = fileName+"."+fileType;
  compressionFactor = 9;
