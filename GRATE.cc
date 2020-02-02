@@ -20,11 +20,11 @@
 #include "G4NucleiProperties.hh"
 #include "G4Evaporation.hh"
 #include "GRATEmanager.hh"
+#include "ExcitationEnergy.hh"
 #include "GRATEPhysicsList.hh"
 #include "TGlauber/TGlauberMC.hh"
 #include "TGlauber/TGlauNucleon.hh"
 #include "TGlauber/TGlauNucleus.hh"
-#include "TRandom.h" 
 #include "TVector3.h"
 #include "TObjArray.h"
 #include "TObject.h"
@@ -38,6 +38,7 @@
 #include "G4Ions.hh"
 #include "G4DeexPrecoParameters.hh"
 #include "G4NuclearLevelData.hh"
+
 
 #include <fstream>
 
@@ -157,14 +158,7 @@ if(histoManager.WriteMomentum()){
   G4double init_nucl_mass_B = G4NucleiProperties::GetNuclearMass(histoManager.GetSourceAb(),histoManager.GetSourceZb());
 
 
-//Parameters for ALADIN parametrizations
-G4double e_0=8*MeV;//MeV     
-G4double sigma0 = 0.07	;//should fit our results
-G4double c0 = 2; // From Bondorf 1995
-G4double sigmaE0 = 1*MeV;
-G4double b0 = 0.1;
-//Goldhaber model parameter 
-G4double GoldhaberDev0 = 90*MeV; //Model parameter
+
 //Starting of modeling
 //###########################################################################################s#######################################
 //Setting up ExcitationHandler
@@ -186,9 +180,26 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
   mcg->SetCalcArea(0);
   mcg->SetCalcCore(0);
   mcg->SetDetail(99);
- 
 
-  for(G4int count=0;count<histoManager.GetIterations() ;count++){
+//Setting Excitation Energy
+    ExcitationEnergy* ExEnA = new ExcitationEnergy(histoManager.GetStatType(), sourceA);
+    ExcitationEnergy* ExEnB = new ExcitationEnergy(histoManager.GetStatType(), sourceAb);
+//Parameters for ALADIN parametrization
+    G4double e_0=8*MeV;//MeV
+    G4double sigma0 = 0.07	;//should fit our results
+    G4double c0 = 2; // From Bondorf 1995
+    G4double sigmaE0 = 1*MeV;
+    G4double b0 = 0.1;
+    ExEnA->SetParametersALADIN(e_0,sigma0,b0);
+    ExEnB->SetParametersALADIN(e_0,sigma0,b0);
+    //ExEnA->SetParametersCorrectedALADIN(0.01,1000,sigma0,b0,0);
+    //ExEnB->SetParametersCorrectedALADIN(0.01,1000,sigma0,b0,0);
+//Goldhaber model parameter
+    G4double GoldhaberDev0 = 90*MeV; //Model parameter
+
+
+
+    for(G4int count=0;count<histoManager.GetIterations() ;count++){
 
       auto remFile = remove("last_event.txt");
       ofstream last_event("last_event.txt");
@@ -231,43 +242,9 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
  last_event<<"Ab = "<<Ab<<", Zb = "<<Zb<<std::endl;
 
  if(!((Z == 0 && A > 19) || (Zb == 0 && Ab > 19))) {//should be solved in some other way
-     G4double Ebound = 40; //Maximum exitation energy per hole, MeV
+   G4double Ebound = 40; //Maximum exitation energy per hole, MeV
 
      G4int N = 1000; //Number of points at level density
-
-     G4double ExcitationEnergyDistribution[N];
-     //Excitation energy level density array creation
-
-
-     switch (histoManager.GetStatType()) {
-         case 1: {
-             for (G4int n = 0; n < N; n++) {
-                 G4double sum =
-                         Ericson(G4double(n) * ((histoManager.GetUpEn() - histoManager.GetLowEn()) / G4double(N)),
-                                 Ebound, A, sourceA) * (histoManager.GetUpEn() - histoManager.GetLowEn()) / N;
-                 ExcitationEnergyDistribution[n] = sum;
-             }
-             break;
-         }
-         case 2: {
-             for (G4int n = 0; n < N; n++) {
-                 ExcitationEnergyDistribution[n] = GaimardSchmidt(
-                         G4double(n) * ((histoManager.GetUpEn() - histoManager.GetLowEn()) / G4double(N)), Ebound, A,
-                         sourceA) * (histoManager.GetUpEn() - histoManager.GetLowEn()) / N;
-             }
-             break;
-         }
-         default: {
-             for (G4int n = 0; n < N; n++) {
-                 G4double sum =
-                         Ericson(G4double(n) * ((histoManager.GetUpEn() - histoManager.GetLowEn()) / G4double(N)),
-                                 Ebound, A, sourceA) * (histoManager.GetUpEn() - histoManager.GetLowEn()) / N;
-                 ExcitationEnergyDistribution[n] = sum;
-             }
-             break;
-         }
-     }
-
 //~~~~~~~~~~~~~~GoldhaberModel~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
      G4double totalNumFragments = 0.;
      G4int thisEventNumFragments = 0;
@@ -276,55 +253,13 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
      std::cout.setf(std::ios::scientific, std::ios::floatfield);
 
      //Excitation energy computing
-     CLHEP::RandGeneral randGeneral(ExcitationEnergyDistribution, N);
+   //  CLHEP::RandGeneral randGeneral(ExcitationEnergyDistribution, N);
      CLHEP::RandGauss randGauss(0, 1);
      CLHEP::RandFlat randFlat(new CLHEP::RanluxEngine);
 
      G4double energy = 0;
+     energy = ExEnA->GetEnergy(A);
 
-     switch (histoManager.GetStatType()) {
-         case 1: {//Ericson distribution
-             energy =
-                     randGeneral.shoot() * (histoManager.GetUpEn() - histoManager.GetLowEn()) + histoManager.GetLowEn();
-             break;
-         }
-         case 2: {//Gaimard-Schmidt distributions
-             energy =
-                     randGeneral.shoot() * (histoManager.GetUpEn() - histoManager.GetLowEn()) + histoManager.GetLowEn();
-             break;
-         }
-         case 3: {//ALADIN parametrisation
-             G4double alpha = G4double(A) / G4double(sourceA);
-             G4double sigma1 = randGauss.shoot() * sigma0 * (1 + c0 * (1 - alpha));
-             G4double alpha1 = alpha + sigma1;
-             G4double sigmaE = randGauss.shoot() * sigmaE0 * (1 + b0 * (1 - alpha));
-             energy = e_0 * A * pow(1 - alpha, 0.5) + A * sigmaE;
-             while (energy != energy) {
-                 sigma1 = randGauss.shoot() * sigma0 * (1 + c0 * (1 - alpha));
-                 sigmaE = randGauss.shoot() * sigmaE0 * (1 + b0 * (1 - alpha));
-                 alpha1 = alpha + sigma1;
-                 energy = e_0 * A * pow(1 - alpha, 0.5) + A * sigmaE;
-             }
-             break;
-         }
-         case 4: {//4th degree parametrisation
-             G4double alpha = G4double(A) / G4double(sourceA);
-             G4double sigmaE = randGauss.shoot() * sigmaE0 * (1 + b0 * (1 - alpha));
-             energy = 0.5 * e_0 * A * pow(1 - alpha, 0.25) + 0 * A * sigmaE;
-             break;
-         }
-
-         case 5: {
-             energy = 50 * G4double(sourceA) * randFlat.shoot();
-             break;
-         }
-         default: {
-             G4Exception("Statistics label", "GRATE-1", FatalException, "Statistics label is invalid");
-             break;
-         }
-     }
-
-//	G4cout<<"Ex = "<<energy<<G4endl;
      //G4double GoldhaberDev0 = energy/G4double(A)*938*MeV;
      G4double GoldhaberDev = GoldhaberDev0 * pow(G4double(A * NpartA) / G4double(sourceA - 1), 0.5);
      CLHEP::RandGauss randGoldhaber(new CLHEP::RanluxEngine, 0, GoldhaberDev);
@@ -343,9 +278,6 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
      G4Fragment aFragment(A, Z, p4);
      G4ThreeVector boostVector = p4.boostVector();
 
-
-     // G4int RestFragmentZ=Z;
-     // G4int RestFragmentA=A;
      G4double eta_A = 0;
 
 
@@ -430,90 +362,8 @@ G4double GoldhaberDev0 = 90*MeV; //Model parameter
 
 //$$$$$$$$$$$$$$$//Side B//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
      TGlauNucleus *nucB = mcg->GetNucleusB();
-
-     //Excitation energy array for side B
-     G4double ExcitationEnergyDistributionB[N];
-     //Excitation energy level density array creation
-
-     switch (histoManager.GetStatType()) {
-         case 1: {
-             for (G4int n = 0; n < N; n++) {
-                 G4double sum =
-                         Ericson(G4double(n) * ((histoManager.GetUpEnB() - histoManager.GetLowEnB()) / G4double(N)),
-                                 Ebound, Ab, sourceAb) * (histoManager.GetUpEnB() - histoManager.GetLowEnB()) / N;
-                 ExcitationEnergyDistributionB[n] = sum;
-             }
-             break;
-         }
-         case 2: {
-             for (G4int n = 0; n < N; n++) {
-                 ExcitationEnergyDistributionB[n] = GaimardSchmidt(
-                         G4double(n) * ((histoManager.GetUpEnB() - histoManager.GetLowEnB()) / G4double(N)), Ebound, Ab,
-                         sourceAb) * (histoManager.GetUpEnB() - histoManager.GetLowEnB()) / N;
-             }
-             break;
-         }
-         default: {
-             for (G4int n = 0; n < N; n++) {
-                 G4double sum =
-                         Ericson(G4double(n) * ((histoManager.GetUpEnB() - histoManager.GetLowEnB()) / G4double(N)),
-                                 Ebound, Ab, sourceAb) * (histoManager.GetUpEnB() - histoManager.GetLowEnB()) / N;
-                 ExcitationEnergyDistributionB[n] = sum;
-             }
-             break;
-         }
-     }
-
-
-     CLHEP::RandGeneral randGeneralB(ExcitationEnergyDistributionB, N);
      G4double energyB = 0;
-
-     switch (histoManager.GetStatType()) {
-         case 1: {//Ericson distribution
-             energyB = randGeneralB.shoot() * (histoManager.GetUpEnB() - histoManager.GetLowEnB()) +
-                       histoManager.GetLowEnB();
-             break;
-         }
-         case 2: {//Gaimard-Schmidt distributions
-             energyB = randGeneralB.shoot() * (histoManager.GetUpEnB() - histoManager.GetLowEnB()) +
-                       histoManager.GetLowEnB();
-             break;
-         }
-         case 3: {//ALADIN parametrisation
-             G4double alphaB = G4double(Ab) / G4double(sourceAb);
-             G4double sigma1B = randGauss.shoot() * sigma0 * (1 + c0 * (1 - alphaB));
-             G4double alpha1B = alphaB + sigma1B;
-             G4double sigmaEB = randGauss.shoot() * sigmaE0 * (1 + b0 * (1 - alphaB));
-             energyB = e_0 * Ab * pow(1 - alphaB, 0.5) + Ab * sigmaEB;
-             while (energyB != energyB) {
-                 sigma1B = randGauss.shoot() * sigma0 * (1 + c0 * (1 - alphaB));
-                 alpha1B = alphaB + sigma1B;
-                 energyB = e_0 * Ab * pow(1 - alphaB, 0.5) + Ab * sigmaEB;
-             }
-             break;
-         }
-         case 4: {//ALADIN parametrisation
-             G4double alphaB = G4double(Ab) / G4double(sourceAb);
-             G4double sigma1B = randGauss.shoot() * sigma0 * (1 + c0 * (1 - alphaB));
-             G4double alpha1B = alphaB + sigma1B;
-             G4double sigmaEB = randGauss.shoot() * sigmaE0 * (1 + b0 * (1 - alphaB));
-             energyB = e_0 * Ab * pow(1 - alphaB, 0.5) + Ab * sigmaEB;
-             while (energyB != energyB) {
-                 sigma1B = randGauss.shoot() * sigma0 * (1 + c0 * (1 - alphaB));
-                 alpha1B = alphaB + sigma1B;
-                 energyB = e_0 * Ab * pow(1 - alphaB, 0.5) + Ab * sigmaEB;
-             }
-             break;
-         }
-         case 5: {
-             energyB = 50 * G4double(sourceAb) * randFlat.shoot();
-             break;
-         }
-         default: {
-             G4Exception("Statistics label", "GRATE-1", FatalException, "Statistics label is invalid");
-             break;
-         }
-     }
+     energyB = ExEnB->GetEnergy(Ab);
 
      G4double pxB = -px;
      G4double pyB = -py;
@@ -620,5 +470,3 @@ G4cout<<"----> total x-sect = "<<mcg->GetTotXSect()<< " +- " << mcg->GetTotXSect
   delete runManager;
   return 0;
 }
-
-      

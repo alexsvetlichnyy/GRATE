@@ -226,6 +226,9 @@
 		<Unit filename="/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/include/Ericson.hh">
 			<Option target="GRATE"/>
 		</Unit>
+		<Unit filename="/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/include/ExcitationEnergy.hh">
+			<Option target="GRATE"/>
+		</Unit>
 		<Unit filename="/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/include/GRATEPhysicsList.hh">
 			<Option target="GRATE"/>
 		</Unit>
@@ -239,6 +242,9 @@
 			<Option target="GRATE"/>
 		</Unit>
 		<Unit filename="/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/Ericson.cc">
+			<Option target="GRATE"/>
+		</Unit>
+		<Unit filename="/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/ExcitationEnergy.cc">
 			<Option target="GRATE"/>
 		</Unit>
 		<Unit filename="/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/GRATEPhysicsList.cc">

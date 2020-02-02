@@ -1,6 +1,3 @@
-
-// Igor Pshenichnov 06.08.2008
-
 #ifndef GRATEmanager_h
 #define GRATEmanager_h 1
 
@@ -9,7 +6,7 @@
 #include "TTree.h"
 #include "TParticle.h"
 #include <fstream>
-#include "math.h"
+#include <cmath>
 class TFile;
 class TH1D;
 class TH2D;
@@ -31,9 +28,6 @@ class GRATEmanager
   void BookHisto();
   void CalcXsectNN();
   void CleanHisto();
-  void CalcHyppGeomHisto();
-  void CalcHyppGeomArray(G4int RestNucleons);
-  void CalcHyppGeomArrayB(G4int RestNucleons);
   void FillConditionsTree(G4double Xsect);
   
   inline G4String GetSysA() {return SysA;}

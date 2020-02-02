@@ -83,9 +83,22 @@ CMakeFiles/GRATE.dir/src/Ericson.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/GRATE.dir/src/Ericson.cc.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/Ericson.cc -o CMakeFiles/GRATE.dir/src/Ericson.cc.s
 
+CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.o: CMakeFiles/GRATE.dir/flags.make
+CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.o: ../src/ExcitationEnergy.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.o -c /home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/ExcitationEnergy.cc
+
+CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/ExcitationEnergy.cc > CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.i
+
+CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/ExcitationEnergy.cc -o CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.s
+
 CMakeFiles/GRATE.dir/src/GRATEPhysicsList.cc.o: CMakeFiles/GRATE.dir/flags.make
 CMakeFiles/GRATE.dir/src/GRATEPhysicsList.cc.o: ../src/GRATEPhysicsList.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/GRATE.dir/src/GRATEPhysicsList.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/GRATE.dir/src/GRATEPhysicsList.cc.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/GRATE.dir/src/GRATEPhysicsList.cc.o -c /home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/GRATEPhysicsList.cc
 
 CMakeFiles/GRATE.dir/src/GRATEPhysicsList.cc.i: cmake_force
@@ -98,7 +111,7 @@ CMakeFiles/GRATE.dir/src/GRATEPhysicsList.cc.s: cmake_force
 
 CMakeFiles/GRATE.dir/src/GRATEmanager.cc.o: CMakeFiles/GRATE.dir/flags.make
 CMakeFiles/GRATE.dir/src/GRATEmanager.cc.o: ../src/GRATEmanager.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/GRATE.dir/src/GRATEmanager.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/GRATE.dir/src/GRATEmanager.cc.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/GRATE.dir/src/GRATEmanager.cc.o -c /home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/GRATEmanager.cc
 
 CMakeFiles/GRATE.dir/src/GRATEmanager.cc.i: cmake_force
@@ -111,7 +124,7 @@ CMakeFiles/GRATE.dir/src/GRATEmanager.cc.s: cmake_force
 
 CMakeFiles/GRATE.dir/src/GaimardSchmidt.cc.o: CMakeFiles/GRATE.dir/flags.make
 CMakeFiles/GRATE.dir/src/GaimardSchmidt.cc.o: ../src/GaimardSchmidt.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/GRATE.dir/src/GaimardSchmidt.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/GRATE.dir/src/GaimardSchmidt.cc.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/GRATE.dir/src/GaimardSchmidt.cc.o -c /home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/GaimardSchmidt.cc
 
 CMakeFiles/GRATE.dir/src/GaimardSchmidt.cc.i: cmake_force
@@ -126,6 +139,7 @@ CMakeFiles/GRATE.dir/src/GaimardSchmidt.cc.s: cmake_force
 GRATE_OBJECTS = \
 "CMakeFiles/GRATE.dir/GRATE.cc.o" \
 "CMakeFiles/GRATE.dir/src/Ericson.cc.o" \
+"CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.o" \
 "CMakeFiles/GRATE.dir/src/GRATEPhysicsList.cc.o" \
 "CMakeFiles/GRATE.dir/src/GRATEmanager.cc.o" \
 "CMakeFiles/GRATE.dir/src/GaimardSchmidt.cc.o"
@@ -135,6 +149,7 @@ GRATE_EXTERNAL_OBJECTS =
 
 GRATE: CMakeFiles/GRATE.dir/GRATE.cc.o
 GRATE: CMakeFiles/GRATE.dir/src/Ericson.cc.o
+GRATE: CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.o
 GRATE: CMakeFiles/GRATE.dir/src/GRATEPhysicsList.cc.o
 GRATE: CMakeFiles/GRATE.dir/src/GRATEmanager.cc.o
 GRATE: CMakeFiles/GRATE.dir/src/GaimardSchmidt.cc.o
@@ -209,7 +224,7 @@ GRATE: /home/alex/root/root-install/lib/libThread.so
 GRATE: /home/alex/root/root-install/lib/libMultiProc.so
 GRATE: /home/alex/root/root-install/lib/libMathMore.so
 GRATE: CMakeFiles/GRATE.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable GRATE"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable GRATE"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/GRATE.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

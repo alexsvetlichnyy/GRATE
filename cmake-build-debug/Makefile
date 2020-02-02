@@ -236,6 +236,33 @@ src/Ericson.cc.s:
 	$(MAKE) -f CMakeFiles/GRATE.dir/build.make CMakeFiles/GRATE.dir/src/Ericson.cc.s
 .PHONY : src/Ericson.cc.s
 
+src/ExcitationEnergy.o: src/ExcitationEnergy.cc.o
+
+.PHONY : src/ExcitationEnergy.o
+
+# target to build an object file
+src/ExcitationEnergy.cc.o:
+	$(MAKE) -f CMakeFiles/GRATE.dir/build.make CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.o
+.PHONY : src/ExcitationEnergy.cc.o
+
+src/ExcitationEnergy.i: src/ExcitationEnergy.cc.i
+
+.PHONY : src/ExcitationEnergy.i
+
+# target to preprocess a source file
+src/ExcitationEnergy.cc.i:
+	$(MAKE) -f CMakeFiles/GRATE.dir/build.make CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.i
+.PHONY : src/ExcitationEnergy.cc.i
+
+src/ExcitationEnergy.s: src/ExcitationEnergy.cc.s
+
+.PHONY : src/ExcitationEnergy.s
+
+# target to generate assembly for a file
+src/ExcitationEnergy.cc.s:
+	$(MAKE) -f CMakeFiles/GRATE.dir/build.make CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.s
+.PHONY : src/ExcitationEnergy.cc.s
+
 src/GRATEPhysicsList.o: src/GRATEPhysicsList.cc.o
 
 .PHONY : src/GRATEPhysicsList.o
@@ -337,6 +364,9 @@ help:
 	@echo "... src/Ericson.o"
 	@echo "... src/Ericson.i"
 	@echo "... src/Ericson.s"
+	@echo "... src/ExcitationEnergy.o"
+	@echo "... src/ExcitationEnergy.i"
+	@echo "... src/ExcitationEnergy.s"
 	@echo "... src/GRATEPhysicsList.o"
 	@echo "... src/GRATEPhysicsList.i"
 	@echo "... src/GRATEPhysicsList.s"
