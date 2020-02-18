@@ -263,6 +263,33 @@ src/ExcitationEnergy.cc.s:
 	$(MAKE) -f CMakeFiles/GRATE.dir/build.make CMakeFiles/GRATE.dir/src/ExcitationEnergy.cc.s
 .PHONY : src/ExcitationEnergy.cc.s
 
+src/G4StatMFParameters.o: src/G4StatMFParameters.cc.o
+
+.PHONY : src/G4StatMFParameters.o
+
+# target to build an object file
+src/G4StatMFParameters.cc.o:
+	$(MAKE) -f CMakeFiles/GRATE.dir/build.make CMakeFiles/GRATE.dir/src/G4StatMFParameters.cc.o
+.PHONY : src/G4StatMFParameters.cc.o
+
+src/G4StatMFParameters.i: src/G4StatMFParameters.cc.i
+
+.PHONY : src/G4StatMFParameters.i
+
+# target to preprocess a source file
+src/G4StatMFParameters.cc.i:
+	$(MAKE) -f CMakeFiles/GRATE.dir/build.make CMakeFiles/GRATE.dir/src/G4StatMFParameters.cc.i
+.PHONY : src/G4StatMFParameters.cc.i
+
+src/G4StatMFParameters.s: src/G4StatMFParameters.cc.s
+
+.PHONY : src/G4StatMFParameters.s
+
+# target to generate assembly for a file
+src/G4StatMFParameters.cc.s:
+	$(MAKE) -f CMakeFiles/GRATE.dir/build.make CMakeFiles/GRATE.dir/src/G4StatMFParameters.cc.s
+.PHONY : src/G4StatMFParameters.cc.s
+
 src/GRATEPhysicsList.o: src/GRATEPhysicsList.cc.o
 
 .PHONY : src/GRATEPhysicsList.o
@@ -367,6 +394,9 @@ help:
 	@echo "... src/ExcitationEnergy.o"
 	@echo "... src/ExcitationEnergy.i"
 	@echo "... src/ExcitationEnergy.s"
+	@echo "... src/G4StatMFParameters.o"
+	@echo "... src/G4StatMFParameters.i"
+	@echo "... src/G4StatMFParameters.s"
 	@echo "... src/GRATEPhysicsList.o"
 	@echo "... src/GRATEPhysicsList.i"
 	@echo "... src/GRATEPhysicsList.s"

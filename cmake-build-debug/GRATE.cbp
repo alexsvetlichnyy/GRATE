@@ -247,6 +247,9 @@
 		<Unit filename="/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/ExcitationEnergy.cc">
 			<Option target="GRATE"/>
 		</Unit>
+		<Unit filename="/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/G4StatMFParameters.cc">
+			<Option target="GRATE"/>
+		</Unit>
 		<Unit filename="/home/alex/INR/Spectators/Code/Glauber-based-abrasion-ablation/GRATE/src/GRATEPhysicsList.cc">
 			<Option target="GRATE"/>
 		</Unit>

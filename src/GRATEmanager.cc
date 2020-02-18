@@ -79,16 +79,16 @@ while(!NucleusInputLabel){
   upperLimitExEnB *=sourceAb;
   upperLimitExEnB *=MeV;
 
- while ( (StatisticsLabel<0) || (StatisticsLabel>4) || (upperLimitExEn<lowLimitExEn) ) {
+ while ( (StatisticsLabel<0) || (StatisticsLabel>5) || (upperLimitExEn<lowLimitExEn) ) {
   std::cout << "Please choose the level density function to be used: 1 - Ericson, 2 - Gaimard-Schmidt, 3 - ALADIN parametrization : ";
   std::cin >> StatisticsLabel;
   }
 
- std::cout<<"Write momentum of a fragments? ";
+ std::cout<<"Write momentum of each fragment?  (1 - yes, 0 - no) ";
  std::cin>>wM;
 
 
- std::cout<<"Write pseudorapidity of a fragments? ";
+ std::cout<<"Write pseudorapidity of each fragments?  (1 - yes, 0 - no) ";
  std::cin>>wP;
 
  while ( (iterations<0) || (iterations>10000000) ) {

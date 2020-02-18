@@ -190,8 +190,12 @@ if(histoManager.WriteMomentum()){
     G4double c0 = 2; // From Bondorf 1995
     G4double sigmaE0 = 1*MeV;
     G4double b0 = 0.1;
+    G4double Pe = 24*MeV;
+    G4double Pm = 0.2;
     ExEnA->SetParametersALADIN(e_0,sigma0,b0);
     ExEnB->SetParametersALADIN(e_0,sigma0,b0);
+    ExEnA->SetParametersParabolicApproximation(Pe, Pm);
+    ExEnB->SetParametersParabolicApproximation(Pe, Pm);
     //ExEnA->SetParametersCorrectedALADIN(0.01,1000,sigma0,b0,0);
     //ExEnB->SetParametersCorrectedALADIN(0.01,1000,sigma0,b0,0);
 //Goldhaber model parameter

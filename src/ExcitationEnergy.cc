@@ -44,8 +44,26 @@ void ExcitationEnergy::SetParametersCorrectedALADIN(G4double e0_in, G4double c0_
     sigma0 = sigma0_in;
     b0 = b0_in;
     b1 = b1_in;
-    G4cout<<"!!!!"<<G4endl;
 }
+
+void ExcitationEnergy::SetParametersCorrectedALADINFromFile() {
+    std::vector<G4double> ParamVect;
+    G4double param = NULL;
+    G4int iter=0;
+    while(1){
+        ParamFile>>param;
+        ParamVect.push_back(param);
+        if(!ParamFile.good()) break;
+        iter++;
+    }
+    SetParametersCorrectedALADIN(ParamVect.at(0),ParamVect.at(1),ParamVect.at(2),ParamVect.at(3),ParamVect.at(4));
+}
+
+void ExcitationEnergy::SetParametersParabolicApproximation(G4double Pe_in, G4double Pm_in) {
+    Pe = Pe_in;
+    Pm = Pm_in;
+}
+
 
 G4double ExcitationEnergy::GetEnergyALADIN(G4int A) {
     CLHEP::RandGauss randGauss(0,1);
@@ -111,6 +129,17 @@ G4double ExcitationEnergy::GetEnergyGaimardSchmidt(G4int A) {
     return energy;
 }
 
+
+G4double ExcitationEnergy::GetEnergyParabolicApproximation(G4int A) {
+    G4double energy;
+    G4double alpha = G4double(A)/G4double(initA);
+    energy = Pe*G4double(A)*(1 - alpha)*(alpha + Pm);
+
+    return energy;
+}
+
+
+
 G4double ExcitationEnergy::GetEnergy(G4int A) {
    G4double energy;
     switch(ExEnLabel) {
@@ -130,6 +159,10 @@ G4double ExcitationEnergy::GetEnergy(G4int A) {
             energy = GetEnergyCorrectedALADIN(A);
             break;
         }
+        case 5:{
+            energy = GetEnergyParabolicApproximation(A);
+            break;
+        }
         default:{
             G4Exception("Statistics label", "GRATE-1", FatalException, "Statistics label is invalid");
             break;
@@ -138,15 +171,3 @@ G4double ExcitationEnergy::GetEnergy(G4int A) {
     return energy;
 }
 
-void ExcitationEnergy::SetParametersCorrectedALADINFromFile() {
-    std::vector<G4double> ParamVect;
-    G4double param = NULL;
-    G4int iter=0;
-    while(1){
-        ParamFile>>param;
-        ParamVect.push_back(param);
-        if(!ParamFile.good()) break;
-        iter++;
-    }
-    SetParametersCorrectedALADIN(ParamVect.at(0),ParamVect.at(1),ParamVect.at(2),ParamVect.at(3),ParamVect.at(4));
-}

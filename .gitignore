@@ -1,3 +1,4 @@
 build/
 build_unif/
+сmake-build-debug/
 *.root

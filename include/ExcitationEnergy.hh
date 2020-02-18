@@ -24,6 +24,8 @@ public:
 
     G4double GetEnergyCorrectedALADIN(G4int A);
 
+    G4double GetEnergyParabolicApproximation(G4int A);
+
     void SetInitNuclMass(G4int initA_in);
 
     void SetParametersEricson(G4double g0_in);
@@ -36,6 +38,8 @@ public:
 
     void SetParametersCorrectedALADINFromFile();
 
+    void SetParametersParabolicApproximation(G4double Pe_in, G4double Pm_in);
+
 private:
      G4double g0;
      G4double g1;
@@ -44,6 +48,8 @@ private:
      G4double b0;
      G4double c0;
      G4double b1;
+     G4double Pe;
+     G4double Pm;
 
      G4int initA;
      G4int ExEnLabel;
