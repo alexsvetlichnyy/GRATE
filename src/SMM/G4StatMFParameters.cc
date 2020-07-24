@@ -34,7 +34,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
-const G4double G4StatMFParameters::fKappa = 1.0; // dimensionless
+const G4double G4StatMFParameters::fKappa = 3.0; // dimensionless
 
 const G4double G4StatMFParameters::fKappaCoulomb = 2.0; // dimensionless
 

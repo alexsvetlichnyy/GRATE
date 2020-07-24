@@ -1,4 +1,4 @@
-#ifndef ExcitationEnergy_h;
+#ifndef ExcitationEnergy_h
 #define ExcitationEnergy_h 1
 
 #include "globals.hh"
@@ -38,7 +38,7 @@ public:
 
     void SetParametersCorrectedALADINFromFile();
 
-    void SetParametersParabolicApproximation(G4double Pe_in, G4double Pm_in);
+    void SetParametersParabolicApproximation(G4double Pe_in, G4double Pm_in, G4double sigmaP_in, G4double bP0_in, G4double bP1_in);
 
 private:
      G4double g0;
@@ -50,9 +50,12 @@ private:
      G4double b1;
      G4double Pe;
      G4double Pm;
+     G4double sigmaP;
+     G4double bP0;
+     G4double bP1;
 
-     G4int initA;
-     G4int ExEnLabel;
+    G4int initA;
+    G4int ExEnLabel;
 
      G4double LowExEn;
      G4double UpExEn;

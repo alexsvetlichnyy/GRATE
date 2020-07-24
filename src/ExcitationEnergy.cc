@@ -1,7 +1,7 @@
 #include "ExcitationEnergy.hh"
 
 #include "Ericson.hh"
-#include_next "GaimardSchmidt.hh"
+#include "GaimardSchmidt.hh"
 
 ExcitationEnergy::ExcitationEnergy(G4int ExEnLabel_in, G4int initA_in): ExEnLabel(3) {
 ExEnLabel = ExEnLabel_in;
@@ -59,9 +59,12 @@ void ExcitationEnergy::SetParametersCorrectedALADINFromFile() {
     SetParametersCorrectedALADIN(ParamVect.at(0),ParamVect.at(1),ParamVect.at(2),ParamVect.at(3),ParamVect.at(4));
 }
 
-void ExcitationEnergy::SetParametersParabolicApproximation(G4double Pe_in, G4double Pm_in) {
+void ExcitationEnergy::SetParametersParabolicApproximation(G4double Pe_in, G4double Pm_in, G4double sigmaP_in, G4double bP0_in, G4double bP1_in) {
     Pe = Pe_in;
     Pm = Pm_in;
+    sigmaP = sigmaP_in;
+    bP0 = bP0_in;
+    bP1 = bP1_in;
 }
 
 
@@ -72,7 +75,7 @@ G4double ExcitationEnergy::GetEnergyALADIN(G4int A) {
     G4double sigmaE = randGauss.shoot() * sigma0 * (1 + b0 * (1 - alpha));
     energy = e0 * A * pow(1 - alpha, 0.5) + A * sigmaE;
 
-    while (energy != energy) {
+    while (energy < 0 || energy != energy ) {
         sigmaE = randGauss.shoot() * sigma0 * (1 + b0 * (1 - alpha));
         energy = e0 * A * pow(1 - alpha, 0.5) + A * sigmaE;
     }
@@ -86,7 +89,7 @@ G4double ExcitationEnergy::GetEnergyCorrectedALADIN(G4int A) {
     G4double alpha = G4double(A) / G4double(initA);
     G4double sigmaE = randGauss.shoot() * sigma0 * (1 + b0 * (1 - alpha)+b1 * (1-alpha) * (1-alpha));
     energy = A*std::sqrt(std::sqrt(e0*e0 + c0*(1-alpha)) - e0) + A * sigmaE;
-    while (energy != energy) {
+    while (energy < 0 || energy != energy) {
         sigmaE = randGauss.shoot() * sigma0 * (1 + b0 * (1 - alpha)+b1 * (1-alpha) * (1-alpha));
         energy = A*std::sqrt(std::sqrt(e0*e0 - c0*(1-alpha)) - e0) + A * sigmaE;
     }
@@ -131,9 +134,12 @@ G4double ExcitationEnergy::GetEnergyGaimardSchmidt(G4int A) {
 
 
 G4double ExcitationEnergy::GetEnergyParabolicApproximation(G4int A) {
+
+    CLHEP::RandGauss randGauss(0,1);
     G4double energy;
     G4double alpha = G4double(A)/G4double(initA);
-    energy = Pe*G4double(A)*(1 - alpha)*(alpha + Pm);
+    G4double sigmaE = randGauss.shoot() * sigmaP * (1 + bP0 * (1 - alpha)+bP1 * (1-alpha) * (1-alpha));
+    energy = Pe*G4double(A)*(1 - alpha)*(alpha + Pm)+sigmaE;
 
     return energy;
 }

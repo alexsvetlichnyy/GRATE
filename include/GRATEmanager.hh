@@ -7,6 +7,13 @@
 #include "TParticle.h"
 #include <fstream>
 #include <cmath>
+
+#include "../TGlauber/TGlauberMC.hh"
+#include "../TGlauber/TGlauNucleon.hh"
+#include "../TGlauber/TGlauNucleus.hh"
+
+#include "InitialConditions.hh"
+
 class TFile;
 class TH1D;
 class TH2D;
@@ -15,7 +22,7 @@ class GRATEmanager
 {
   public:
 
-  GRATEmanager();
+  explicit GRATEmanager();
    ~GRATEmanager();
 
   public:
@@ -29,6 +36,7 @@ class GRATEmanager
   void CalcXsectNN();
   void CleanHisto();
   void FillConditionsTree(G4double Xsect);
+  void CalcNucleonDensity(TObjArray* nucleons_pre, G4double b);
   
   inline G4String GetSysA() {return SysA;}
   inline G4String GetSysB() {return SysB;}
@@ -40,14 +48,17 @@ class GRATEmanager
   inline G4int GetIterations()  {return iterations;};
   inline G4double GetXsectNN() {return XsectNN;}
   inline G4double GetKinEn() {return KinEn;};
+  inline G4double GetPzA()   {return PzA;};
+  inline G4double GetPzB()   {return PzB;};
   inline G4double GetLowEn() {return lowLimitExEn;};
   inline G4double GetUpEn() {return upperLimitExEn;};
   inline G4double GetLowEnB() {return lowLimitExEnB;};
   inline G4double GetUpEnB() {return upperLimitExEnB;};
-  inline G4double GetHyppGeomArray(G4int id) {return HyppGeomArray[id];};
-  inline G4double GetHyppGeomArrayB(G4int id) {return HyppGeomArrayB[id];};
+  inline G4double GetLowB() {return lowLimitB;};
+  inline G4double GetUpB() {return upperLimitB;};
   inline G4bool   WriteMomentum() {return wM;};
   inline G4bool   WritePseudorapidity() {return wP;};
+  inline InitialConditions GetInitialContidions() {return *InCond;};
 
 
   
@@ -55,24 +66,20 @@ class GRATEmanager
 
   
     TFile* fFile;
-    TFile* IsotopMap;
     TH1D*  histo[20];
-    TH2D*  HyppGeomHisto2;
-    TH2D*  HyppGeomHisto2b;
     TH2D*  histo2[10];
     TTree* Glauber;
     TTree* modelingCo;
  
-        
-    G4double HyppGeomArray[100];
-    G4double HyppGeomArrayB[100];
+
     G4int sourceZ;
     G4int sourceA;
     G4int sourceZb;
     G4int sourceAb;
     G4int iterations; 
     G4int StatisticsLabel;  
-    G4bool NucleusInputLabel; 
+    G4bool NucleusInputLabel;
+    G4bool IsCollider;
 
     G4String fileName;
     G4String fileType;
@@ -86,16 +93,23 @@ class GRATEmanager
     G4double XsectNN;
 
     G4double KinEn;
-    G4double pZ;	
+    G4double PzA;
+    G4double PzB;
     G4double lowLimitExEn;
     G4double upperLimitExEn;
     G4double lowLimitExEnB;
     G4double upperLimitExEnB;
+    G4double lowLimitB;
+    G4double upperLimitB;
     G4int    binsExEn;
-    G4int    eventsPerBin;   
+    G4int    eventsPerBin;
+
+    G4double nucleonAverMass = 0.931494;
 
     G4bool   wM;
     G4bool   wP;   
+
+    InitialConditions* InCond = new InitialConditions();
 
     std::ifstream XsectFile;
 
